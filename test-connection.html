@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Socket.IO 連線測試</title>
+  <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"></script>
+</head>
+<body>
+  <h1>Socket.IO 連線測試</h1>
+  <div id="status">連線中...</div>
+  <div id="logs"></div>
+
+  <script>
+    const socket = io('http://localhost:3001', {
+      transports: ['websocket', 'polling']
+    })
+
+    const statusEl = document.getElementById('status')
+    const logsEl = document.getElementById('logs')
+
+    function addLog(msg) {
+      const p = document.createElement('p')
+      p.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`
+      logsEl.appendChild(p)
+    }
+
+    socket.on('connect', () => {
+      statusEl.textContent = '✅ 已連線！Socket ID: ' + socket.id
+      statusEl.style.color = 'green'
+      addLog('Connected to server')
+
+      // 測試發送事件
+      socket.emit('join', { employeeId: 'TEST001' })
+    })
+
+    socket.on('disconnect', () => {
+      statusEl.textContent = '❌ 已斷線'
+      statusEl.style.color = 'red'
+      addLog('Disconnected from server')
+    })
+
+    socket.on('connect_error', (error) => {
+      statusEl.textContent = '❌ 連線錯誤: ' + error.message
+      statusEl.style.color = 'red'
+      addLog('Connection error: ' + error.message)
+    })
+
+    socket.on('joinSuccess', (data) => {
+      addLog('Join success: ' + JSON.stringify(data))
+    })
+
+    socket.on('error', (data) => {
+      addLog('Error: ' + JSON.stringify(data))
+    })
+  </script>
+</body>
+</html>
