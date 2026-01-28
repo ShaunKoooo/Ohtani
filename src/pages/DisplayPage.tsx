@@ -74,7 +74,7 @@ function DisplayPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: '#8B0000',
       padding: 40,
       display: 'flex',
       flexDirection: 'column',
@@ -84,9 +84,16 @@ function DisplayPage() {
       overflow: 'hidden'
     }}>
       {/* 標題 */}
-      <div style={{ textAlign: 'center', marginBottom: 60 }}>
-        <Title style={{ color: 'white', fontSize: 80, margin: 0, textShadow: '0 4px 8px rgba(0,0,0,0.3)' }}>
-          🎊 春酒抽獎
+      <div style={{ textAlign: 'center', marginBottom: 60, position: 'relative', zIndex: 1 }}>
+        <Title style={{
+          color: '#FFD700',
+          fontSize: 80,
+          margin: 0,
+          textShadow: '0 4px 20px rgba(255, 215, 0, 0.6)',
+          fontWeight: 900,
+          letterSpacing: 6
+        }}>
+          🎊 春酒抽獎 🎊
         </Title>
 
         {/* 當前獎項提示 */}
@@ -94,19 +101,27 @@ function DisplayPage() {
           <div style={{
             marginTop: 30,
             padding: '20px 40px',
-            background: 'rgba(255, 215, 0, 0.3)',
-            border: '3px solid #ffd700',
+            background: 'white',
+            border: '3px solid #FFD700',
             borderRadius: 16,
             display: 'inline-block',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+            boxShadow: '0 8px 32px rgba(255, 215, 0, 0.4)'
           }}>
             <Space size="large">
-              <StarOutlined style={{ color: '#ffd700', fontSize: 32 }} />
-              <Text style={{ color: 'white', fontSize: 28, fontWeight: 'bold' }}>
+              <StarOutlined style={{ color: '#FFD700', fontSize: 32 }} />
+              <Text style={{ color: '#8B0000', fontSize: 28, fontWeight: 'bold' }}>
                 本輪抽獎項目：
               </Text>
               <Badge count={currentPrize.remaining} style={{ backgroundColor: '#52c41a', fontSize: 18 }}>
-                <Tag color="gold" style={{ fontSize: 24, padding: '10px 24px', margin: 0 }}>
+                <Tag style={{
+                  fontSize: 24,
+                  padding: '10px 24px',
+                  margin: 0,
+                  background: '#FFD700',
+                  border: 'none',
+                  color: '#8B0000',
+                  fontWeight: 'bold'
+                }}>
                   {currentPrize.name} (NT$ {currentPrize.value.toLocaleString()})
                 </Tag>
               </Badge>
@@ -118,33 +133,67 @@ function DisplayPage() {
       {/* 最新中獎者 */}
       {latestWinner ? (
         <div className="winner-card" style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          borderRadius: 24,
-          padding: 60,
-          maxWidth: 900,
+          background: 'white',
+          borderRadius: 32,
+          padding: 80,
+          maxWidth: 1000,
           width: '100%',
-          boxShadow: '0 16px 48px rgba(0,0,0,0.4)',
-          textAlign: 'center'
+          boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+          textAlign: 'center',
+          position: 'relative',
+          zIndex: 1,
+          border: '8px solid #FFD700'
         }}>
-          <TrophyOutlined style={{ fontSize: 120, color: '#ffd700', marginBottom: 30 }} />
+          <TrophyOutlined style={{
+            fontSize: 140,
+            color: '#FFD700',
+            marginBottom: 30
+          }} />
 
-          <Title level={1} style={{ margin: 0, fontSize: 80, color: '#1890ff' }}>
+          <Title level={1} style={{
+            margin: 0,
+            fontSize: 100,
+            color: '#8B0000',
+            fontWeight: 900,
+            letterSpacing: 2
+          }}>
             {latestWinner.employee.name}
           </Title>
 
           <div style={{ margin: '30px 0' }}>
             <Space size="large" wrap>
-              <Tag color="blue" style={{ fontSize: 28, padding: '10px 24px' }}>
+              <Tag style={{
+                fontSize: 32,
+                padding: '12px 28px',
+                borderRadius: 8,
+                background: '#8B0000',
+                border: 'none',
+                color: 'white',
+                fontWeight: 'bold'
+              }}>
                 {latestWinner.employee.id}
               </Tag>
-              <Tag
-                color={latestWinner.employee.roleType === 'A' ? 'gold' : 'green'}
-                style={{ fontSize: 28, padding: '10px 24px' }}
-              >
+              <Tag style={{
+                fontSize: 32,
+                padding: '12px 28px',
+                borderRadius: 8,
+                background: latestWinner.employee.roleType === 'A' ? '#FFD700' : '#52c41a',
+                border: 'none',
+                color: latestWinner.employee.roleType === 'A' ? '#8B0000' : 'white',
+                fontWeight: 'bold'
+              }}>
                 角色 {latestWinner.employee.roleType}
               </Tag>
               {latestWinner.employee.department && (
-                <Tag style={{ fontSize: 28, padding: '10px 24px' }}>
+                <Tag style={{
+                  fontSize: 32,
+                  padding: '12px 28px',
+                  borderRadius: 8,
+                  background: '#1890ff',
+                  border: 'none',
+                  color: 'white',
+                  fontWeight: 'bold'
+                }}>
                   {latestWinner.employee.department}
                 </Tag>
               )}
@@ -152,43 +201,45 @@ function DisplayPage() {
           </div>
 
           <div style={{
-            background: 'linear-gradient(135deg, #ff6b6b 0%, #ff4d4f 100%)',
-            borderRadius: 16,
-            padding: 40,
-            marginTop: 40,
-            boxShadow: '0 8px 24px rgba(255, 77, 79, 0.3)'
+            background: '#FFD700',
+            borderRadius: 20,
+            padding: 50,
+            marginTop: 50,
+            boxShadow: '0 12px 40px rgba(255, 215, 0, 0.4)'
           }}>
-            <Text style={{ color: 'white', fontSize: 32, display: 'block', marginBottom: 16, opacity: 0.9 }}>
-              獲得
+            <Text style={{ color: '#8B0000', fontSize: 36, display: 'block', marginBottom: 20, fontWeight: 'bold' }}>
+              🎁 獲得
             </Text>
-            <Title level={2} style={{ color: 'white', margin: 0, fontSize: 64 }}>
+            <Title level={2} style={{ color: '#8B0000', margin: 0, fontSize: 72, fontWeight: 900 }}>
               {latestWinner.prize.name}
             </Title>
-            <Text style={{ color: 'white', fontSize: 40, display: 'block', marginTop: 20, fontWeight: 'bold' }}>
+            <Text style={{ color: '#8B0000', fontSize: 48, display: 'block', marginTop: 24, fontWeight: 'bold' }}>
               NT$ {latestWinner.prize.value.toLocaleString()}
             </Text>
           </div>
-
-          <div style={{ marginTop: 30, color: '#999', fontSize: 16 }}>
-            {new Date(latestWinner.drawnAt).toLocaleString('zh-TW')}
-          </div>
         </div>
       ) : (
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
           <div style={{
-            width: 200,
-            height: 200,
+            width: 240,
+            height: 240,
             margin: '0 auto 40px',
-            background: 'rgba(255, 255, 255, 0.1)',
+            background: 'rgba(255, 215, 0, 0.2)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '4px dashed rgba(255, 255, 255, 0.3)'
+            border: '6px dashed #FFD700'
           }}>
-            <TrophyOutlined style={{ fontSize: 100, color: 'rgba(255, 255, 255, 0.4)' }} />
+            <TrophyOutlined style={{
+              fontSize: 120,
+              color: '#FFD700'
+            }} />
           </div>
-          <Title level={2} style={{ color: 'white', opacity: 0.8 }}>
+          <Title level={2} style={{
+            color: '#FFD700',
+            fontSize: 48
+          }}>
             等待主持人開始抽獎...
           </Title>
         </div>
