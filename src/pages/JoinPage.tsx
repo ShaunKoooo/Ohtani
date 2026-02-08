@@ -1,17 +1,30 @@
 import { useState } from 'react'
-import { Card, Input, Button, Typography, Space, Tag, message, Result } from 'antd'
-import { UserOutlined, CheckCircleOutlined, TrophyOutlined } from '@ant-design/icons'
-import axios from 'axios'
+import { Card, Input, Button, Typography, Space, Tag, message, Result, Descriptions } from 'antd'
+import { UserOutlined, CheckCircleOutlined, TrophyOutlined, CalendarOutlined, TeamOutlined } from '@ant-design/icons'
+import { employeeApi } from '../services/api'
 
 const { Title, Text, Paragraph } = Typography
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+interface EmployeeInfoState {
+  name: string
+  employeeId: string
+  hireDate: string
+  department: string
+  position: string
+  roleType: 'A' | 'B' | 'C'
+  hasDrawn: boolean
+  prize?: {
+    name: string
+    value: number
+  }
+  alreadyWon?: boolean
+}
 
 function JoinPage() {
   const [employeeId, setEmployeeId] = useState('')
   const [joined, setJoined] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [employeeInfo, setEmployeeInfo] = useState<any>(null)
+  const [employeeInfo, setEmployeeInfo] = useState<EmployeeInfoState | null>(null)
 
   const handleJoin = async () => {
     if (!employeeId.trim()) {
@@ -22,17 +35,16 @@ function JoinPage() {
     setLoading(true)
 
     try {
-      // 直接呼叫後端 API 驗證員工
-      const response = await axios.get(`${API_URL}/employees`)
-      const employees = response.data.employees || response.data
+      // 呼叫後端報到 API
+      const response = await employeeApi.checkin(employeeId.toUpperCase())
 
-      const employee = employees.find((emp: any) => emp.employeeId === employeeId.toUpperCase())
-
-      if (!employee) {
-        message.error('員工編號不存在，請確認後再試')
+      if (!response.success) {
+        message.error(response.error || '報到失敗')
         setLoading(false)
         return
       }
+
+      const employee = response.employee
 
       // 檢查是否已經中獎
       if (employee.hasDrawn) {
@@ -52,9 +64,10 @@ function JoinPage() {
       setLoading(false)
       message.success('報到成功！')
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Join error:', error)
-      message.error('報到失敗，請稍後再試')
+      const errorMsg = error?.response?.data?.error || '報到失敗，請稍後再試'
+      message.error(errorMsg)
       setLoading(false)
     }
   }
@@ -250,7 +263,7 @@ function JoinPage() {
                   <div>
                     <div style={{ marginBottom: 20, marginTop: 16 }}>
                       <Title level={3} style={{ margin: 0, color: '#8B0000' }}>{employeeInfo?.name}</Title>
-                      <Space style={{ marginTop: 12 }} size="middle">
+                      <Space style={{ marginTop: 12 }} size="middle" wrap>
                         <Tag style={{
                           fontSize: 16,
                           padding: '6px 16px',
@@ -263,7 +276,7 @@ function JoinPage() {
                         <Tag style={{
                           fontSize: 16,
                           padding: '6px 16px',
-                          background: employeeInfo?.roleType === 'A' ? '#FFD700' : '#52c41a',
+                          background: employeeInfo?.roleType === 'A' ? '#FFD700' : employeeInfo?.roleType === 'B' ? '#52c41a' : '#ff7875',
                           color: employeeInfo?.roleType === 'A' ? '#8B0000' : 'white',
                           border: 'none',
                           fontWeight: 'bold'
@@ -271,7 +284,7 @@ function JoinPage() {
                           角色 {employeeInfo?.roleType}
                         </Tag>
                         {employeeInfo?.department && (
-                          <Tag style={{
+                          <Tag icon={<TeamOutlined />} style={{
                             fontSize: 16,
                             padding: '6px 16px',
                             background: '#1890ff',
@@ -283,6 +296,29 @@ function JoinPage() {
                         )}
                       </Space>
                     </div>
+
+                    {/* 員工詳細資訊 */}
+                    <div style={{
+                      background: '#f5f5f5',
+                      border: '2px solid #d9d9d9',
+                      borderRadius: 12,
+                      padding: 20,
+                      marginTop: 16,
+                      textAlign: 'left'
+                    }}>
+                      <Descriptions column={1} size="small">
+                        <Descriptions.Item label={<><CalendarOutlined /> 到職日期</>}>
+                          <Text strong>{employeeInfo?.hireDate}</Text>
+                        </Descriptions.Item>
+                        <Descriptions.Item label={<><TeamOutlined /> 部門</>}>
+                          <Text strong>{employeeInfo?.department}</Text>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="職級">
+                          <Text strong>{employeeInfo?.position}</Text>
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </div>
+
                     <div style={{
                       background: '#fff7e6',
                       border: '2px solid #FFD700',
@@ -306,6 +342,19 @@ function JoinPage() {
                       }}>
                         <Text style={{ fontSize: 13, color: '#ad6800', fontWeight: 'bold' }}>
                           💡 您的角色只能抽萬元以下的獎品
+                        </Text>
+                      </div>
+                    )}
+                    {employeeInfo?.roleType === 'C' && (
+                      <div style={{
+                        marginTop: 16,
+                        padding: 14,
+                        background: '#ffccc7',
+                        border: '2px solid #ff4d4f',
+                        borderRadius: 8
+                      }}>
+                        <Text style={{ fontSize: 13, color: '#cf1322', fontWeight: 'bold' }}>
+                          ⚠️ 您的角色無法參加抽獎（到職未滿3個月）
                         </Text>
                       </div>
                     )}

@@ -7,7 +7,32 @@ export interface Employee {
   department?: string
   hireDate?: string
   hasDrawn?: boolean
+  position?: string
+  prize?: {
+    name: string
+    value: number
+  }
   createdAt: string
+}
+
+// 報到回應型別
+export interface CheckinResponse {
+  success: boolean
+  message?: string
+  error?: string
+  employee?: {
+    name: string
+    employeeId: string
+    hireDate: string
+    department: string
+    position: string
+    roleType: 'A' | 'B' | 'C'
+    hasDrawn: boolean
+    prize?: {
+      name: string
+      value: number
+    }
+  }
 }
 
 // 獎項型別

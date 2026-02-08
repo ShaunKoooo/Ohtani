@@ -12,6 +12,12 @@ const api = axios.create({
 // ========== 員工管理 ==========
 
 export const employeeApi = {
+  // 員工報到
+  checkin: async (employeeId: string) => {
+    const response = await api.post('/checkin', { employeeId })
+    return response.data
+  },
+
   // 取得所有員工
   getAll: async () => {
     const response = await api.get('/employees')
