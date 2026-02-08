@@ -6,6 +6,8 @@ export interface Employee {
   roleType: 'A' | 'B' | 'C'
   department?: string
   hireDate?: string
+  hasCheckedIn?: boolean
+  checkedInAt?: string
   hasDrawn?: boolean
   position?: string
   prize?: {

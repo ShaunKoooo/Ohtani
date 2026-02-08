@@ -3,7 +3,6 @@ import { Table, Button, Modal, Form, Input, Select, message, Space, Upload, Card
 import { PlusOutlined, UploadOutlined, ReloadOutlined } from '@ant-design/icons'
 import { employeeApi } from '../services/api'
 import type { Employee } from '../types'
-import dayjs from 'dayjs'
 
 function EmployeeManagement() {
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -126,6 +125,26 @@ function EmployeeManagement() {
       render: (date: string) => date || '-'
     },
     {
+      title: '報到狀態',
+      dataIndex: 'hasCheckedIn',
+      key: 'hasCheckedIn',
+      width: 100,
+      render: (hasCheckedIn: boolean) => {
+        return hasCheckedIn ? (
+          <span style={{ color: '#52c41a', fontWeight: 'bold' }}>✓ 已報到</span>
+        ) : (
+          <span style={{ color: '#999' }}>未報到</span>
+        )
+      }
+    },
+    {
+      title: '報到時間',
+      dataIndex: 'checkedInAt',
+      key: 'checkedInAt',
+      width: 180,
+      render: (date: string) => date ? new Date(date).toLocaleString('zh-TW') : '-'
+    },
+    {
       title: '建立時間',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -161,8 +180,47 @@ function EmployeeManagement() {
         </Button>
       </Space>
 
-      <div style={{ marginBottom: 16, color: '#666' }}>
-        共 {employees.length} 位員工
+      <div style={{ marginBottom: 16, display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+        <div>
+          <span style={{ color: '#666' }}>總員工數：</span>
+          <span style={{ fontWeight: 'bold', fontSize: 16 }}>{employees.length}</span>
+        </div>
+        <div>
+          <span style={{ color: '#666' }}>已報到：</span>
+          <span style={{ fontWeight: 'bold', fontSize: 16, color: '#52c41a' }}>
+            {employees.filter(e => e.hasCheckedIn).length}
+          </span>
+        </div>
+        <div>
+          <span style={{ color: '#666' }}>未報到：</span>
+          <span style={{ fontWeight: 'bold', fontSize: 16, color: '#999' }}>
+            {employees.filter(e => !e.hasCheckedIn).length}
+          </span>
+        </div>
+        <div style={{ borderLeft: '1px solid #d9d9d9', paddingLeft: 24 }}>
+          <span style={{ color: '#666' }}>已抽獎：</span>
+          <span style={{ fontWeight: 'bold', fontSize: 16, color: '#1890ff' }}>
+            {employees.filter(e => e.hasDrawn).length}
+          </span>
+        </div>
+        <div style={{ borderLeft: '1px solid #d9d9d9', paddingLeft: 24 }}>
+          <span style={{ color: '#fa8c16' }}>角色 A：</span>
+          <span style={{ fontWeight: 'bold', fontSize: 16 }}>
+            {employees.filter(e => e.roleType === 'A').length}
+          </span>
+        </div>
+        <div>
+          <span style={{ color: '#52c41a' }}>角色 B：</span>
+          <span style={{ fontWeight: 'bold', fontSize: 16 }}>
+            {employees.filter(e => e.roleType === 'B').length}
+          </span>
+        </div>
+        <div>
+          <span style={{ color: '#d9d9d9' }}>角色 C：</span>
+          <span style={{ fontWeight: 'bold', fontSize: 16 }}>
+            {employees.filter(e => e.roleType === 'C').length}
+          </span>
+        </div>
       </div>
 
       <Table
