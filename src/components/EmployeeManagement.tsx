@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Table, Button, Modal, Form, Input, Select, message, Space, Upload, Card } from 'antd'
+import { Table, Button, Modal, Form, Input, Select, message, Space, Upload, Card, DatePicker } from 'antd'
 import { PlusOutlined, UploadOutlined, ReloadOutlined } from '@ant-design/icons'
 import { employeeApi } from '../services/api'
 import type { Employee } from '../types'
+import dayjs from 'dayjs'
 
 function EmployeeManagement() {
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -35,6 +36,10 @@ function EmployeeManagement() {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields()
+      // 轉換日期格式
+      if (values.hireDate) {
+        values.hireDate = values.hireDate.format('YYYY/MM/DD')
+      }
       await employeeApi.create(values)
       message.success('新增員工成功')
       setModalVisible(false)
@@ -112,6 +117,13 @@ function EmployeeManagement() {
       dataIndex: 'department',
       key: 'department',
       width: 120
+    },
+    {
+      title: '到職日期',
+      dataIndex: 'hireDate',
+      key: 'hireDate',
+      width: 120,
+      render: (date: string) => date || '-'
     },
     {
       title: '建立時間',
@@ -210,6 +222,17 @@ function EmployeeManagement() {
             label="部門"
           >
             <Input placeholder="例如：資訊部（選填）" />
+          </Form.Item>
+
+          <Form.Item
+            name="hireDate"
+            label="到職日期"
+          >
+            <DatePicker
+              style={{ width: '100%' }}
+              format="YYYY/MM/DD"
+              placeholder="選擇到職日期（選填）"
+            />
           </Form.Item>
         </Form>
       </Modal>

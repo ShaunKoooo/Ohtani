@@ -5,6 +5,7 @@ export interface Employee {
   name: string
   roleType: 'A' | 'B' | 'C'
   department?: string
+  hireDate?: string
   hasDrawn?: boolean
   createdAt: string
 }
