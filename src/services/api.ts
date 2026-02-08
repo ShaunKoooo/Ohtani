@@ -22,7 +22,7 @@ export const employeeApi = {
   create: async (employee: {
     employeeId: string
     name: string
-    roleType: 'A' | 'B'
+    roleType: 'A' | 'B' | 'C'
     department?: string
   }) => {
     const response = await api.post('/employees', employee)
@@ -33,10 +33,22 @@ export const employeeApi = {
   batchCreate: async (employees: Array<{
     employeeId: string
     name: string
-    roleType: 'A' | 'B'
+    roleType: 'A' | 'B' | 'C'
     department?: string
   }>) => {
     const response = await api.post('/employees/batch', { employees })
+    return response.data
+  },
+
+  // 上傳 CSV 檔案
+  uploadCSV: async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post('/employees/upload-csv', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
     return response.data
   }
 }

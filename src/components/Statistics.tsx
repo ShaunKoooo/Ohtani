@@ -111,11 +111,14 @@ function Statistics() {
       dataIndex: ['employee', 'roleType'],
       key: 'roleType',
       width: 80,
-      render: (roleType: string) => (
-        <Tag color={roleType === 'A' ? 'gold' : 'green'}>
-          角色 {roleType}
-        </Tag>
-      )
+      render: (roleType: string) => {
+        const colorMap = { A: 'gold', B: 'green', C: 'default' }
+        return (
+          <Tag color={colorMap[roleType as keyof typeof colorMap] || 'default'}>
+            角色 {roleType}
+          </Tag>
+        )
+      }
     },
     {
       title: '獎品',
@@ -196,21 +199,33 @@ function Statistics() {
         <Col xs={24} md={12}>
           <Card title="員工角色分布">
             <Row>
-              <Col span={12}>
+              <Col span={8}>
                 <Statistic
                   title="角色 A"
                   value={stats.employees.roleA}
-                  suffix={`人 (${((stats.employees.roleA / stats.employees.total) * 100).toFixed(1)}%)`}
+                  suffix={`人 (${stats.employees.total > 0 ? ((stats.employees.roleA / stats.employees.total) * 100).toFixed(1) : 0}%)`}
                 />
               </Col>
-              <Col span={12}>
+              <Col span={8}>
                 <Statistic
                   title="角色 B"
                   value={stats.employees.roleB}
-                  suffix={`人 (${((stats.employees.roleB / stats.employees.total) * 100).toFixed(1)}%)`}
+                  suffix={`人 (${stats.employees.total > 0 ? ((stats.employees.roleB / stats.employees.total) * 100).toFixed(1) : 0}%)`}
+                />
+              </Col>
+              <Col span={8}>
+                <Statistic
+                  title="角色 C"
+                  value={stats.employees.roleC || 0}
+                  suffix={`人 (${stats.employees.total > 0 ? (((stats.employees.roleC || 0) / stats.employees.total) * 100).toFixed(1) : 0}%)`}
                 />
               </Col>
             </Row>
+            <div style={{ marginTop: 16, padding: 12, background: '#f5f5f5', borderRadius: 4, fontSize: 12, color: '#666' }}>
+              <div>角色 A：可抽所有獎品</div>
+              <div>角色 B：僅可抽萬元以下獎品</div>
+              <div>角色 C：不可抽獎（來賓、廠商等）</div>
+            </div>
           </Card>
         </Col>
 

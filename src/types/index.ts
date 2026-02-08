@@ -3,7 +3,7 @@ export interface Employee {
   id: number
   employeeId: string
   name: string
-  roleType: 'A' | 'B'
+  roleType: 'A' | 'B' | 'C'
   department?: string
   hasDrawn?: boolean
   createdAt: string
@@ -26,7 +26,7 @@ export interface DrawRecord {
   employee: {
     id: string
     name: string
-    roleType: 'A' | 'B'
+    roleType: 'A' | 'B' | 'C'
     department?: string
   }
   prize: {
@@ -44,7 +44,7 @@ export interface DrawResult {
   employee?: {
     id: string
     name: string
-    roleType: 'A' | 'B'
+    roleType: 'A' | 'B' | 'C'
     department?: string
   }
   prize?: {
@@ -76,6 +76,7 @@ export interface Stats {
     undrawn: number
     roleA: number
     roleB: number
+    roleC: number
   }
   prizes: {
     total: number
