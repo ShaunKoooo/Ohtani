@@ -173,7 +173,7 @@ function DisplayPage() {
               }}>
                 {latestWinner.employee.id}
               </Tag>
-              <Tag style={{
+              {/* <Tag style={{
                 fontSize: 32,
                 padding: '12px 28px',
                 borderRadius: 8,
@@ -183,7 +183,7 @@ function DisplayPage() {
                 fontWeight: 'bold'
               }}>
                 角色 {latestWinner.employee.roleType}
-              </Tag>
+              </Tag> */}
               {latestWinner.employee.department && (
                 <Tag style={{
                   fontSize: 32,

@@ -273,7 +273,7 @@ function JoinPage() {
                         }}>
                           {employeeInfo?.employeeId}
                         </Tag>
-                        <Tag style={{
+                        {/* <Tag style={{
                           fontSize: 16,
                           padding: '6px 16px',
                           background: employeeInfo?.roleType === 'A' ? '#FFD700' : employeeInfo?.roleType === 'B' ? '#52c41a' : '#ff7875',
@@ -282,7 +282,7 @@ function JoinPage() {
                           fontWeight: 'bold'
                         }}>
                           角色 {employeeInfo?.roleType}
-                        </Tag>
+                        </Tag> */}
                         {employeeInfo?.department && (
                           <Tag icon={<TeamOutlined />} style={{
                             fontSize: 16,
@@ -298,7 +298,7 @@ function JoinPage() {
                     </div>
 
                     {/* 員工詳細資訊 */}
-                    <div style={{
+                    {/* <div style={{
                       background: '#f5f5f5',
                       border: '2px solid #d9d9d9',
                       borderRadius: 12,
@@ -317,7 +317,7 @@ function JoinPage() {
                           <Text strong>{employeeInfo?.position}</Text>
                         </Descriptions.Item>
                       </Descriptions>
-                    </div>
+                    </div> */}
 
                     <div style={{
                       background: '#fff7e6',
@@ -332,7 +332,7 @@ function JoinPage() {
                         🎉 主持人抽獎時會顯示中獎者
                       </Paragraph>
                     </div>
-                    {employeeInfo?.roleType === 'B' && (
+                    {/* {employeeInfo?.roleType === 'B' && (
                       <div style={{
                         marginTop: 16,
                         padding: 14,
@@ -344,8 +344,8 @@ function JoinPage() {
                           💡 您的角色只能抽萬元以下的獎品
                         </Text>
                       </div>
-                    )}
-                    {employeeInfo?.roleType === 'C' && (
+                    )} */}
+                    {/* {employeeInfo?.roleType === 'C' && (
                       <div style={{
                         marginTop: 16,
                         padding: 14,
@@ -357,7 +357,7 @@ function JoinPage() {
                           ⚠️ 您的角色無法參加抽獎（到職未滿3個月）
                         </Text>
                       </div>
-                    )}
+                    )} */}
                   </div>
                 }
                 extra={[
@@ -388,9 +388,10 @@ function JoinPage() {
               />
             )}
           </div>
-        )}
-      </Card>
-    </div>
+        )
+        }
+      </Card >
+    </div >
   )
 }
 
