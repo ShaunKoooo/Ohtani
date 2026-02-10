@@ -160,9 +160,15 @@ export const lotteryApi = {
 // ========== 系統管理 ==========
 
 export const systemApi = {
-  // 重置抽獎記錄
+  // 部分重置（保留員工和獎項，只重置抽獎狀態）
   reset: async () => {
     const response = await api.post('/reset', { confirm: true })
+    return response.data
+  },
+
+  // 完全重置（刪除所有資料）
+  resetAll: async () => {
+    const response = await api.post('/reset/all', { confirm: 'DELETE_ALL' })
     return response.data
   },
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Table, Button, Modal, Form, Input, Select, message, Space, Upload, Card, DatePicker } from 'antd'
-import { PlusOutlined, UploadOutlined, ReloadOutlined } from '@ant-design/icons'
-import { employeeApi } from '../services/api'
+import { PlusOutlined, UploadOutlined, ReloadOutlined, WarningOutlined, DeleteOutlined } from '@ant-design/icons'
+import { employeeApi, systemApi } from '../services/api'
 import type { Employee } from '../types'
 
 function EmployeeManagement() {
@@ -77,6 +77,75 @@ function EmployeeManagement() {
       console.error(error)
     }
     return false // 阻止自動上傳
+  }
+
+  const handleReset = () => {
+    Modal.confirm({
+      title: '部分重置系統',
+      icon: <WarningOutlined style={{ color: '#faad14' }} />,
+      content: (
+        <div>
+          <p>這將會重置以下資料：</p>
+          <ul style={{ paddingLeft: 20 }}>
+            <li>所有抽獎記錄</li>
+            <li>獎品剩餘數量（重置回原始數量）</li>
+            <li>員工報到狀態</li>
+            <li>當前抽獎狀態</li>
+          </ul>
+          <p style={{ marginTop: 12, color: '#52c41a', fontWeight: 'bold' }}>✓ 保留員工資料</p>
+          <p style={{ margin: 0, color: '#52c41a', fontWeight: 'bold' }}>✓ 保留獎項資料</p>
+        </div>
+      ),
+      okText: '確認重置',
+      cancelText: '取消',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          const result = await systemApi.reset()
+          message.success(`重置成功：刪除了 ${result.details.deletedRecords} 筆抽獎記錄`)
+          loadEmployees()
+        } catch (error: any) {
+          message.error(error.response?.data?.error || '重置失敗')
+          console.error(error)
+        }
+      }
+    })
+  }
+
+  const handleResetAll = () => {
+    Modal.confirm({
+      title: '完全重置系統',
+      icon: <DeleteOutlined style={{ color: '#ff4d4f' }} />,
+      content: (
+        <div>
+          <p style={{ color: '#ff4d4f', fontWeight: 'bold', fontSize: 16 }}>⚠️ 這是不可逆的操作！</p>
+          <p>這將會刪除以下所有資料：</p>
+          <ul style={{ paddingLeft: 20 }}>
+            <li>所有員工資料</li>
+            <li>所有獎項資料</li>
+            <li>所有抽獎記錄</li>
+            <li>當前抽獎狀態</li>
+          </ul>
+          <p style={{ marginTop: 12, color: '#ff4d4f', fontWeight: 'bold' }}>系統將回到初始狀態，所有資料都會遺失！</p>
+        </div>
+      ),
+      okText: '確認完全重置',
+      cancelText: '取消',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          const result = await systemApi.resetAll()
+          const details = result.details
+          message.success(
+            `完全重置成功：刪除了 ${details.deletedEmployees} 位員工、${details.deletedPrizes} 個獎項、${details.deletedRecords} 筆抽獎記錄`
+          )
+          loadEmployees()
+        } catch (error: any) {
+          message.error(error.response?.data?.error || '重置失敗')
+          console.error(error)
+        }
+      }
+    })
   }
 
   const columns = [
@@ -162,7 +231,7 @@ function EmployeeManagement() {
 
   return (
     <Card>
-      <Space style={{ marginBottom: 16 }}>
+      <Space style={{ marginBottom: 16 }} wrap>
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -184,6 +253,20 @@ function EmployeeManagement() {
           onClick={loadEmployees}
         >
           重新整理
+        </Button>
+        <Button
+          icon={<WarningOutlined />}
+          onClick={handleReset}
+          style={{ marginLeft: 'auto' }}
+        >
+          部分重置（保留員工和獎項）
+        </Button>
+        <Button
+          danger
+          icon={<DeleteOutlined />}
+          onClick={handleResetAll}
+        >
+          完全重置（刪除所有資料）
         </Button>
       </Space>
 
