@@ -12,7 +12,8 @@ function App() {
     <ConfigProvider locale={zhTW}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<JoinPage />} />
+          <Route path="/menu" element={<HomePage />} />
           <Route path="/join" element={<JoinPage />} />
           <Route path="/draw" element={<DrawPage />} />
           <Route path="/display" element={<DisplayPage />} />
