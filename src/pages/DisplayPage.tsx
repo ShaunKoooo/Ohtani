@@ -114,68 +114,60 @@ function DisplayPage() {
         </div>
       )}
 
+      {/* 當前獎項提示（緊貼跑馬燈下方） */}
+      {currentPrize && (
+        <div style={{
+          textAlign: 'center',
+          padding: '16px 0',
+          background: '#8B0000',
+          borderBottom: '3px solid #FFD700'
+        }}>
+          <div style={{
+            display: 'inline-block',
+            padding: '12px 32px',
+            background: 'white',
+            border: '3px solid #FFD700',
+            borderRadius: 12,
+            boxShadow: '0 4px 16px rgba(255, 215, 0, 0.4)'
+          }}>
+            <Space size="middle">
+              <StarOutlined style={{ color: '#FFD700', fontSize: 24 }} />
+              <Text style={{ color: '#8B0000', fontSize: 20, fontWeight: 'bold' }}>
+                本輪抽獎項目：
+              </Text>
+              <Badge count={currentPrize.remaining} style={{ backgroundColor: '#52c41a', fontSize: 14 }}>
+                <Tag style={{
+                  fontSize: 18,
+                  padding: '6px 16px',
+                  margin: 0,
+                  background: '#FFD700',
+                  border: 'none',
+                  color: '#8B0000',
+                  fontWeight: 'bold'
+                }}>
+                  {currentPrize.name} (NT$ {currentPrize.value.toLocaleString()})
+                </Tag>
+              </Badge>
+            </Space>
+          </div>
+        </div>
+      )}
+
       {/* 主要內容區 */}
       <div style={{
         flex: 1,
-        padding: 40,
+        padding: '16px 40px 40px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         position: 'relative'
       }}>
-        {/* 標題 */}
-        <div style={{ textAlign: 'center', marginBottom: 60, position: 'relative', zIndex: 1 }}>
-          <Title style={{
-            color: '#FFD700',
-            fontSize: 80,
-            margin: 0,
-            textShadow: '0 4px 20px rgba(255, 215, 0, 0.6)',
-            fontWeight: 900,
-            letterSpacing: 6
-          }}>
-            🎊 春酒抽獎 🎊
-          </Title>
-
-          {/* 當前獎項提示 */}
-          {currentPrize && (
-            <div style={{
-              marginTop: 30,
-              padding: '20px 40px',
-              background: 'white',
-              border: '3px solid #FFD700',
-              borderRadius: 16,
-              display: 'inline-block',
-              boxShadow: '0 8px 32px rgba(255, 215, 0, 0.4)'
-            }}>
-              <Space size="large">
-                <StarOutlined style={{ color: '#FFD700', fontSize: 32 }} />
-                <Text style={{ color: '#8B0000', fontSize: 28, fontWeight: 'bold' }}>
-                  本輪抽獎項目：
-                </Text>
-                <Badge count={currentPrize.remaining} style={{ backgroundColor: '#52c41a', fontSize: 18 }}>
-                  <Tag style={{
-                    fontSize: 24,
-                    padding: '10px 24px',
-                    margin: 0,
-                    background: '#FFD700',
-                    border: 'none',
-                    color: '#8B0000',
-                    fontWeight: 'bold'
-                  }}>
-                    {currentPrize.name} (NT$ {currentPrize.value.toLocaleString()})
-                  </Tag>
-                </Badge>
-              </Space>
-            </div>
-          )}
-        </div>
-
         {/* 最新中獎者 */}
         {latestWinners.length > 0 ? (
           <div style={{
             width: '100%',
-            maxWidth: latestWinners.length === 1 ? 1000 : 1400,
+            maxWidth: latestWinners.length === 1 ? 1000 : latestWinners.length <= 3 ? 1400 : '95%',
             position: 'relative',
             zIndex: 1
           }}>
@@ -185,111 +177,222 @@ function DisplayPage() {
                 textAlign: 'center',
                 color: '#FFD700',
                 fontSize: 48,
-                marginBottom: 40,
+                marginBottom: 24,
+                marginTop: 0,
                 textShadow: '0 2px 10px rgba(255, 215, 0, 0.5)'
               }}>
                 🎉 本輪共抽出 {latestWinners.length} 位得獎者 🎉
               </Title>
             )}
 
-            {/* 網格佈局顯示所有中獎者 */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: latestWinners.length === 1 ? '1fr' : latestWinners.length === 2 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
-              gap: 30,
-              width: '100%'
-            }}>
-              {latestWinners.map((winner) => (
-                <div key={winner.id} className="winner-card" style={{
-                  background: 'white',
-                  borderRadius: latestWinners.length === 1 ? 32 : 24,
-                  padding: latestWinners.length === 1 ? 80 : 40,
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-                  textAlign: 'center',
-                  border: '6px solid #FFD700'
-                }}>
-                  <TrophyOutlined style={{
-                    fontSize: latestWinners.length === 1 ? 140 : 80,
-                    color: '#FFD700',
-                    marginBottom: latestWinners.length === 1 ? 30 : 20
-                  }} />
-
-                  <Title level={1} style={{
-                    margin: 0,
-                    fontSize: latestWinners.length === 1 ? 100 : latestWinners.length <= 2 ? 60 : 48,
-                    color: '#8B0000',
-                    fontWeight: 900,
-                    letterSpacing: 2
+            {/* 根據人數選擇不同的顯示模式 */}
+            {latestWinners.length <= 3 ? (
+              /* 1-3 人：網格佈局（卡片模式） */
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: latestWinners.length === 1 ? '1fr' : latestWinners.length === 2 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                gap: 30,
+                width: '100%'
+              }}>
+                {latestWinners.map((winner) => (
+                  <div key={winner.id} className="winner-card" style={{
+                    background: 'white',
+                    borderRadius: latestWinners.length === 1 ? 32 : 24,
+                    padding: latestWinners.length === 1 ? 80 : 40,
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+                    textAlign: 'center',
+                    border: '6px solid #FFD700'
                   }}>
-                    {winner.employee.name}
-                  </Title>
+                    <TrophyOutlined style={{
+                      fontSize: latestWinners.length === 1 ? 140 : 80,
+                      color: '#FFD700',
+                      marginBottom: latestWinners.length === 1 ? 30 : 20
+                    }} />
 
-                  <div style={{ margin: '20px 0' }}>
-                    <Space size="middle" wrap>
-                      <Tag style={{
-                        fontSize: latestWinners.length === 1 ? 32 : 24,
-                        padding: latestWinners.length === 1 ? '12px 28px' : '8px 16px',
-                        borderRadius: 8,
-                        background: '#8B0000',
-                        border: 'none',
-                        color: 'white',
-                        fontWeight: 'bold'
-                      }}>
-                        {winner.employee.id}
-                      </Tag>
-                      {winner.employee.department && (
+                    <Title level={1} style={{
+                      margin: 0,
+                      fontSize: latestWinners.length === 1 ? 100 : latestWinners.length <= 2 ? 60 : 48,
+                      color: '#8B0000',
+                      fontWeight: 900,
+                      letterSpacing: 2
+                    }}>
+                      {winner.employee.name}
+                    </Title>
+
+                    <div style={{ margin: '20px 0' }}>
+                      <Space size="middle" wrap>
                         <Tag style={{
                           fontSize: latestWinners.length === 1 ? 32 : 24,
                           padding: latestWinners.length === 1 ? '12px 28px' : '8px 16px',
                           borderRadius: 8,
-                          background: '#1890ff',
+                          background: '#8B0000',
                           border: 'none',
                           color: 'white',
                           fontWeight: 'bold'
                         }}>
-                          {winner.employee.department}
+                          {winner.employee.id}
                         </Tag>
-                      )}
-                    </Space>
-                  </div>
+                        {winner.employee.department && (
+                          <Tag style={{
+                            fontSize: latestWinners.length === 1 ? 32 : 24,
+                            padding: latestWinners.length === 1 ? '12px 28px' : '8px 16px',
+                            borderRadius: 8,
+                            background: '#1890ff',
+                            border: 'none',
+                            color: 'white',
+                            fontWeight: 'bold'
+                          }}>
+                            {winner.employee.department}
+                          </Tag>
+                        )}
+                      </Space>
+                    </div>
 
-                  <div style={{
-                    background: '#FFD700',
-                    borderRadius: 16,
-                    padding: latestWinners.length === 1 ? 50 : 30,
-                    marginTop: latestWinners.length === 1 ? 50 : 30,
-                    boxShadow: '0 12px 40px rgba(255, 215, 0, 0.4)'
-                  }}>
-                    <Text style={{
-                      color: '#8B0000',
-                      fontSize: latestWinners.length === 1 ? 36 : 28,
-                      display: 'block',
-                      marginBottom: 15,
-                      fontWeight: 'bold'
+                    <div style={{
+                      background: '#FFD700',
+                      borderRadius: 16,
+                      padding: latestWinners.length === 1 ? 50 : 30,
+                      marginTop: latestWinners.length === 1 ? 50 : 30,
+                      boxShadow: '0 12px 40px rgba(255, 215, 0, 0.4)'
                     }}>
-                      🎁 獲得
-                    </Text>
-                    <Title level={2} style={{
-                      color: '#8B0000',
-                      margin: 0,
-                      fontSize: latestWinners.length === 1 ? 72 : latestWinners.length <= 2 ? 48 : 36,
-                      fontWeight: 900
-                    }}>
-                      {winner.prize.name}
-                    </Title>
-                    <Text style={{
-                      color: '#8B0000',
-                      fontSize: latestWinners.length === 1 ? 48 : latestWinners.length <= 2 ? 36 : 28,
-                      display: 'block',
-                      marginTop: 15,
-                      fontWeight: 'bold'
-                    }}>
-                      NT$ {winner.prize.value.toLocaleString()}
-                    </Text>
+                      <Text style={{
+                        color: '#8B0000',
+                        fontSize: latestWinners.length === 1 ? 36 : 28,
+                        display: 'block',
+                        marginBottom: 15,
+                        fontWeight: 'bold'
+                      }}>
+                        🎁 獲得
+                      </Text>
+                      <Title level={2} style={{
+                        color: '#8B0000',
+                        margin: 0,
+                        fontSize: latestWinners.length === 1 ? 72 : latestWinners.length <= 2 ? 48 : 36,
+                        fontWeight: 900
+                      }}>
+                        {winner.prize.name}
+                      </Title>
+                      <Text style={{
+                        color: '#8B0000',
+                        fontSize: latestWinners.length === 1 ? 48 : latestWinners.length <= 2 ? 36 : 28,
+                        display: 'block',
+                        marginTop: 15,
+                        fontWeight: 'bold'
+                      }}>
+                        NT$ {winner.prize.value.toLocaleString()}
+                      </Text>
+                    </div>
                   </div>
+                ))}
+              </div>
+            ) : (
+              /* 4 人以上：緊湊列表模式（適合 30+ 人） */
+              <div style={{
+                background: 'white',
+                borderRadius: 16,
+                padding: '20px 24px',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+                border: '6px solid #FFD700'
+              }}>
+                {/* 中獎者列表（緊湊模式） */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: 12,
+                  width: '100%'
+                }}>
+                  {latestWinners.map((winner, index) => (
+                    <div
+                      key={winner.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        padding: '10px 16px',
+                        background: index % 2 === 0 ? '#f0f0f0' : '#fafafa',
+                        borderRadius: 8,
+                        border: '2px solid #e0e0e0'
+                      }}
+                    >
+                      {/* 序號 */}
+                      <div style={{
+                        minWidth: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: '#FFD700',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <Text style={{ color: '#8B0000', fontSize: 14, fontWeight: 'bold' }}>
+                          {index + 1}
+                        </Text>
+                      </div>
+
+                      {/* 員工編號 + 姓名（帶背景） */}
+                      <div style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        background: 'linear-gradient(135deg, #8B0000 0%, #a52a2a 100%)',
+                        padding: '8px 14px',
+                        borderRadius: 6,
+                        minWidth: 0
+                      }}>
+                        <Text style={{
+                          fontSize: 15,
+                          color: 'white',
+                          fontWeight: 'bold',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {winner.employee.id}
+                        </Text>
+                        <div style={{
+                          width: '2px',
+                          height: '20px',
+                          background: 'rgba(255,255,255,0.4)',
+                          flexShrink: 0
+                        }} />
+                        <Text style={{
+                          fontSize: 16,
+                          color: 'white',
+                          fontWeight: 'bold',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {winner.employee.name}
+                        </Text>
+                      </div>
+
+                      {/* 獎項（緊湊版） */}
+                      <div style={{
+                        background: '#FFD700',
+                        padding: '6px 12px',
+                        borderRadius: 6,
+                        border: '2px solid #8B0000',
+                        minWidth: 140,
+                        flexShrink: 0
+                      }}>
+                        <Text style={{
+                          fontSize: 14,
+                          fontWeight: 'bold',
+                          color: '#8B0000',
+                          display: 'block',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          🎁 {winner.prize.name}
+                        </Text>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
         ) : (
           <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
