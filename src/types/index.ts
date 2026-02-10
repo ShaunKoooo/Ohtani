@@ -6,6 +6,7 @@ export interface Employee {
   roleType: 'A' | 'B' | 'C'
   department?: string
   hireDate?: string
+  tableNumber?: string | null
   hasCheckedIn?: boolean
   checkedInAt?: string
   hasDrawn?: boolean

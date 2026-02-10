@@ -125,6 +125,13 @@ function EmployeeManagement() {
       render: (date: string) => date || '-'
     },
     {
+      title: '桌號',
+      dataIndex: 'tableNumber',
+      key: 'tableNumber',
+      width: 80,
+      render: (tableNumber: string | null) => tableNumber ? `${tableNumber} 桌` : '-'
+    },
+    {
       title: '報到狀態',
       dataIndex: 'hasCheckedIn',
       key: 'hasCheckedIn',

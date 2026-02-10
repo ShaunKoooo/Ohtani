@@ -12,6 +12,7 @@ interface EmployeeInfoState {
   department: string
   position: string
   roleType: 'A' | 'B' | 'C'
+  tableNumber?: string | null
   hasDrawn: boolean
   hasCheckedIn?: boolean
   prize?: {
@@ -266,6 +267,19 @@ function JoinPage() {
                 <Descriptions.Item label={<><TeamOutlined /> 部門</>}>
                   <Text>{employeeInfo.department}</Text>
                 </Descriptions.Item>
+                {employeeInfo.tableNumber && (
+                  <Descriptions.Item label="桌號">
+                    <Tag style={{
+                      fontSize: 14,
+                      padding: '4px 12px',
+                      background: '#1890ff',
+                      color: 'white',
+                      border: 'none'
+                    }}>
+                      {employeeInfo.tableNumber} 桌
+                    </Tag>
+                  </Descriptions.Item>
+                )}
               </Descriptions>
             </div>
 
@@ -338,16 +352,6 @@ function JoinPage() {
                           border: 'none'
                         }}>
                           {employeeInfo.employeeId}
-                        </Tag>
-                        <Tag style={{
-                          fontSize: 16,
-                          padding: '6px 16px',
-                          background: employeeInfo.roleType === 'A' ? '#FFD700' : '#52c41a',
-                          color: employeeInfo.roleType === 'A' ? '#8B0000' : 'white',
-                          border: 'none',
-                          fontWeight: 'bold'
-                        }}>
-                          角色 {employeeInfo.roleType}
                         </Tag>
                         {employeeInfo.department && (
                           <Tag style={{
