@@ -87,34 +87,52 @@ function DisplayPage() {
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* 跑馬燈：當前中獎者 */}
+      {/* 垂直跑馬燈：右側單列顯示中獎者 */}
       {latestWinners.length > 0 && (
-        <div className="marquee-container">
-          <div className="marquee-content">
-            {/* 重複三次讓循環更流暢 */}
-            {[...Array(3)].map((_, repeatIndex) => (
-              latestWinners.map((winner) => (
-                <span key={`${winner.id}-${repeatIndex}`} style={{ display: 'inline-block', marginRight: 60 }}>
-                  <Tag style={{
-                    fontSize: 28,
-                    padding: '10px 24px',
+        <div className="vertical-marquee-wrapper">
+          <div className="vertical-marquee-content">
+            {/* 重複兩次，第二輪會在第一輪快結束時從底部進入 */}
+            {[...latestWinners, ...latestWinners].map((winner, index) => (
+              <div key={`marquee-${index}`}>
+                <div
+                  style={{
                     background: 'white',
-                    color: '#8B0000',
+                    padding: '12px 16px',
+                    borderRadius: 8,
                     border: '3px solid #FFD700',
-                    borderRadius: 10,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                    pointerEvents: 'auto'
+                  }}
+                >
+                  <Text style={{
+                    fontSize: 14,
                     fontWeight: 'bold',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                    color: '#8B0000',
+                    display: 'block'
                   }}>
-                    🎉 {winner.employee.id} - {winner.employee.name}
-                  </Tag>
-                </span>
-              ))
+                    {winner.employee.id}
+                  </Text>
+                  <Text style={{
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    color: '#8B0000',
+                    display: 'block',
+                    marginTop: 4
+                  }}>
+                    {winner.employee.name}
+                  </Text>
+                </div>
+                {/* 在第一輪結束後加入小間隔 */}
+                {index === latestWinners.length - 1 && (
+                  <div style={{ height: '80px' }} />
+                )}
+              </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* 當前獎項提示（緊貼跑馬燈下方） */}
+      {/* 當前獎項提示 */}
       {currentPrize && (
         <div style={{
           textAlign: 'center',
@@ -157,6 +175,7 @@ function DisplayPage() {
       <div style={{
         flex: 1,
         padding: '16px 40px 40px',
+        paddingRight: '240px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

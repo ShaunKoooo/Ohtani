@@ -52,33 +52,40 @@
   }
 }
 
-/* 跑馬燈動畫 */
-.marquee-container {
-  width: 100%;
+/* 垂直跑馬燈容器 */
+.vertical-marquee-wrapper {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 200px;
   overflow: hidden;
-  background: linear-gradient(90deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.1) 50%, rgba(255, 215, 0, 0.2) 100%);
-  border-top: 3px solid #FFD700;
-  border-bottom: 3px solid #FFD700;
-  padding: 20px 0;
-  position: relative;
+  padding: 20px;
+  background: rgba(139, 0, 0, 0.3);
+  border-left: 4px solid #FFD700;
+  z-index: 999;
+  pointer-events: none;
 }
 
-.marquee-content {
-  display: inline-block;
-  white-space: nowrap;
-  animation: marquee 60s linear infinite;
-  padding-right: 100%;
+.vertical-marquee-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: marqueeVerticalSmooth 30s linear infinite;
+  will-change: transform;
 }
 
-@keyframes marquee {
+/*
+  動畫說明：
+  - 內容重複兩次，從 0% 移動到 -50% 就完成一輪
+  - 當第一輪移到 -50% 時，第二輪剛好在 0% 位置（無縫銜接）
+  - 第一輪和第二輪之間有 80px 間隔，造成約 1 秒的視覺停頓
+*/
+@keyframes marqueeVerticalSmooth {
   0% {
-    transform: translateX(0);
+    transform: translateY(0);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateY(-50%);
   }
-}
-
-.marquee-container:hover .marquee-content {
-  animation-play-state: paused;
 }
