@@ -13,6 +13,7 @@ interface EmployeeInfoState {
   position: string
   roleType: 'A' | 'B' | 'C'
   hasDrawn: boolean
+  hasCheckedIn?: boolean
   prize?: {
     name: string
     value: number
@@ -24,9 +25,11 @@ function JoinPage() {
   const [employeeId, setEmployeeId] = useState('')
   const [joined, setJoined] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [confirming, setConfirming] = useState(false) // 新增：確認頁面狀態
   const [employeeInfo, setEmployeeInfo] = useState<EmployeeInfoState | null>(null)
 
-  const handleJoin = async () => {
+  // 第一步：查詢員工資料（不執行報到）
+  const handleQueryEmployee = async () => {
     if (!employeeId.trim()) {
       message.warning('請輸入員工編號')
       return
@@ -35,16 +38,21 @@ function JoinPage() {
     setLoading(true)
 
     try {
-      // 呼叫後端報到 API
-      const response = await employeeApi.checkin(employeeId.toUpperCase())
+      // 使用 GET API 查詢員工資料
+      const response = await employeeApi.getEmployee(employeeId.toUpperCase())
 
       if (!response.success) {
-        message.error(response.error || '報到失敗')
+        message.error(response.error || '查詢失敗')
         setLoading(false)
         return
       }
 
       const employee = response.employee
+
+      // 檢查是否已經報到過
+      if (employee.hasCheckedIn) {
+        message.warning('您已經報到過了')
+      }
 
       // 檢查是否已經中獎
       if (employee.hasDrawn) {
@@ -58,18 +66,54 @@ function JoinPage() {
         return
       }
 
-      // 報到成功
+      // 顯示確認頁面
       setEmployeeInfo(employee)
+      setConfirming(true)
+      setLoading(false)
+
+    } catch (error: any) {
+      console.error('Query error:', error)
+      const errorMsg = error?.response?.data?.error || '查詢失敗，請稍後再試'
+      message.error(errorMsg)
+      setLoading(false)
+    }
+  }
+
+  // 第二步：確認報到
+  const handleConfirmCheckin = async () => {
+    if (!employeeInfo) return
+
+    setLoading(true)
+
+    try {
+      // 呼叫後端報到 API
+      const response = await employeeApi.checkin(employeeInfo.employeeId)
+
+      if (!response.success) {
+        message.error(response.error || '報到失敗')
+        setLoading(false)
+        return
+      }
+
+      // 報到成功
+      setEmployeeInfo(response.employee)
       setJoined(true)
+      setConfirming(false)
       setLoading(false)
       message.success('報到成功！')
 
     } catch (error: any) {
-      console.error('Join error:', error)
+      console.error('Checkin error:', error)
       const errorMsg = error?.response?.data?.error || '報到失敗，請稍後再試'
       message.error(errorMsg)
       setLoading(false)
     }
+  }
+
+  // 取消確認，返回輸入頁面
+  const handleCancelConfirm = () => {
+    setConfirming(false)
+    setEmployeeInfo(null)
   }
 
   return (
@@ -116,8 +160,8 @@ function JoinPage() {
           zIndex: 1
         }}
       >
-        {!joined ? (
-          // 未報到狀態
+        {!joined && !confirming ? (
+          // 第一步：輸入員工編號
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
             <div style={{
               width: 120,
@@ -143,7 +187,7 @@ function JoinPage() {
               placeholder="員工編號(C0104)"
               value={employeeId}
               onChange={(e) => setEmployeeId(e.target.value.toUpperCase())}
-              onPressEnter={handleJoin}
+              onPressEnter={handleQueryEmployee}
               prefix={<UserOutlined />}
               disabled={loading}
               style={{ marginBottom: 16, fontSize: 18 }}
@@ -152,7 +196,7 @@ function JoinPage() {
             <Button
               size="large"
               block
-              onClick={handleJoin}
+              onClick={handleQueryEmployee}
               loading={loading}
               icon={<CheckCircleOutlined />}
               style={{
@@ -164,7 +208,7 @@ function JoinPage() {
                 fontWeight: 'bold'
               }}
             >
-              {loading ? '驗證中...' : '✓ 確認報到'}
+              {loading ? '查詢中...' : '下一步'}
             </Button>
 
             <div style={{ marginTop: 24, padding: 16, background: '#fff7e6', borderRadius: 8, border: '1px solid #FFD700' }}>
@@ -172,6 +216,105 @@ function JoinPage() {
                 💡 報到後請關注大螢幕，主持人抽獎時會即時顯示中獎者
               </Text>
             </div>
+          </div>
+        ) : confirming && employeeInfo ? (
+          // 第二步：確認頁面
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div style={{
+              width: 100,
+              height: 100,
+              margin: '0 auto 24px',
+              background: '#FFD700',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 24px rgba(255, 215, 0, 0.4)'
+            }}>
+              <UserOutlined style={{ fontSize: 50, color: '#8B0000' }} />
+            </div>
+
+            <Title level={2} style={{ color: '#8B0000', marginBottom: 8 }}>請確認您的資料</Title>
+            <Paragraph style={{ color: '#666', marginBottom: 24, fontSize: 14 }}>
+              確認無誤後，請按下「確認報到」按鈕
+            </Paragraph>
+
+            {/* 員工資訊卡片 */}
+            <div style={{
+              background: '#f5f5f5',
+              border: '2px solid #d9d9d9',
+              borderRadius: 12,
+              padding: 24,
+              marginBottom: 24,
+              textAlign: 'left'
+            }}>
+              <Descriptions column={1} size="middle" labelStyle={{ fontWeight: 'bold', color: '#8B0000' }}>
+                <Descriptions.Item label="姓名">
+                  <Text strong style={{ fontSize: 16 }}>{employeeInfo.name}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="員工編號">
+                  <Tag style={{
+                    fontSize: 14,
+                    padding: '4px 12px',
+                    background: '#8B0000',
+                    color: 'white',
+                    border: 'none'
+                  }}>
+                    {employeeInfo.employeeId}
+                  </Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label={<><TeamOutlined /> 部門</>}>
+                  <Text>{employeeInfo.department}</Text>
+                </Descriptions.Item>
+              </Descriptions>
+            </div>
+
+            {employeeInfo.hasCheckedIn && (
+              <div style={{
+                marginBottom: 20,
+                padding: 14,
+                background: '#fff7e6',
+                border: '2px solid #faad14',
+                borderRadius: 8
+              }}>
+                <Text style={{ fontSize: 13, color: '#ad6800', fontWeight: 'bold' }}>
+                  ⚠️ 您已經報到過了，按下確認將會再次記錄
+                </Text>
+              </div>
+            )}
+
+            <Space style={{ width: '100%', display: 'flex', flexDirection: 'column' }} size="middle">
+              <Button
+                size="large"
+                block
+                onClick={handleConfirmCheckin}
+                loading={loading}
+                icon={<CheckCircleOutlined />}
+                style={{
+                  background: '#8B0000',
+                  borderColor: '#8B0000',
+                  color: 'white',
+                  height: 50,
+                  fontSize: 18,
+                  fontWeight: 'bold'
+                }}
+              >
+                {loading ? '報到中...' : '✓ 確認報到'}
+              </Button>
+
+              <Button
+                size="large"
+                block
+                onClick={handleCancelConfirm}
+                disabled={loading}
+                style={{
+                  height: 50,
+                  fontSize: 16
+                }}
+              >
+                返回修改
+              </Button>
+            </Space>
           </div>
         ) : (
           // 已報到狀態
