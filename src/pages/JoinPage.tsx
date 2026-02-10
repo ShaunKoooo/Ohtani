@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Card, Input, Button, Typography, Space, Tag, message, Result, Descriptions } from 'antd'
-import { UserOutlined, CheckCircleOutlined, TrophyOutlined, CalendarOutlined, TeamOutlined } from '@ant-design/icons'
+import { UserOutlined, CheckCircleOutlined, TrophyOutlined, TeamOutlined } from '@ant-design/icons'
 import { employeeApi } from '../services/api'
 
 const { Title, Text, Paragraph } = Typography
