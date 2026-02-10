@@ -175,11 +175,11 @@ function DisplayPage() {
       <div style={{
         flex: 1,
         padding: '16px 40px 40px',
-        paddingRight: '240px',
+        paddingRight: latestWinners.length > 0 ? '240px' : '40px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'flex-start',
+        justifyContent: latestWinners.length > 0 ? 'flex-start' : 'center',
         position: 'relative'
       }}>
         {/* 最新中獎者 */}
