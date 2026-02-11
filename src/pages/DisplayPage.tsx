@@ -80,13 +80,27 @@ function DisplayPage() {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      width: '100vw',
+      height: '100vh',
       background: '#8B0000',
       display: 'flex',
-      flexDirection: 'column',
-      position: 'relative',
-      overflow: 'hidden'
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      position: 'relative'
     }}>
+      {/* 16:9 固定容器 */}
+      <div style={{
+        width: '100vw',
+        height: '56.25vw', // 16:9 ratio
+        maxHeight: '100vh',
+        maxWidth: '177.78vh', // 16:9 ratio
+        background: '#8B0000',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
       {/* 垂直跑馬燈：右側單列顯示中獎者 */}
       {latestWinners.length > 0 && (
         <div className="vertical-marquee-wrapper">
@@ -136,27 +150,28 @@ function DisplayPage() {
       {currentPrize && (
         <div style={{
           textAlign: 'center',
-          padding: '16px 0',
+          padding: '12px 0',
           background: '#8B0000',
-          borderBottom: '3px solid #FFD700'
+          borderBottom: '3px solid #FFD700',
+          flexShrink: 0
         }}>
           <div style={{
             display: 'inline-block',
-            padding: '12px 32px',
+            padding: '8px 24px',
             background: 'white',
             border: '3px solid #FFD700',
-            borderRadius: 12,
+            borderRadius: 10,
             boxShadow: '0 4px 16px rgba(255, 215, 0, 0.4)'
           }}>
             <Space size="middle">
-              <StarOutlined style={{ color: '#FFD700', fontSize: 24 }} />
-              <Text style={{ color: '#8B0000', fontSize: 20, fontWeight: 'bold' }}>
+              <StarOutlined style={{ color: '#FFD700', fontSize: 20 }} />
+              <Text style={{ color: '#8B0000', fontSize: 18, fontWeight: 'bold' }}>
                 本輪抽獎項目：
               </Text>
-              <Badge count={currentPrize.remaining} style={{ backgroundColor: '#52c41a', fontSize: 14 }}>
+              <Badge count={currentPrize.remaining} style={{ backgroundColor: '#52c41a', fontSize: 12 }}>
                 <Tag style={{
-                  fontSize: 18,
-                  padding: '6px 16px',
+                  fontSize: 16,
+                  padding: '4px 12px',
                   margin: 0,
                   background: '#FFD700',
                   border: 'none',
@@ -174,13 +189,14 @@ function DisplayPage() {
       {/* 主要內容區 */}
       <div style={{
         flex: 1,
-        padding: '16px 40px 40px',
-        paddingRight: latestWinners.length > 0 ? '240px' : '40px',
+        padding: '20px 30px',
+        paddingRight: latestWinners.length > 0 ? '220px' : '30px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: latestWinners.length > 0 ? 'flex-start' : 'center',
-        position: 'relative'
+        position: 'relative',
+        overflow: 'hidden'
       }}>
         {/* 最新中獎者 */}
         {latestWinners.length > 0 ? (
@@ -195,8 +211,8 @@ function DisplayPage() {
               <Title level={2} style={{
                 textAlign: 'center',
                 color: '#FFD700',
-                fontSize: 48,
-                marginBottom: 24,
+                fontSize: latestWinners.length <= 3 ? 36 : 30,
+                marginBottom: 16,
                 marginTop: 0,
                 textShadow: '0 2px 10px rgba(255, 215, 0, 0.5)'
               }}>
@@ -210,27 +226,27 @@ function DisplayPage() {
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: latestWinners.length === 1 ? '1fr' : latestWinners.length === 2 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
-                gap: 30,
+                gap: 20,
                 width: '100%'
               }}>
                 {latestWinners.map((winner) => (
                   <div key={winner.id} className="winner-card" style={{
                     background: 'white',
-                    borderRadius: latestWinners.length === 1 ? 32 : 24,
-                    padding: latestWinners.length === 1 ? 80 : 40,
+                    borderRadius: latestWinners.length === 1 ? 24 : 16,
+                    padding: latestWinners.length === 1 ? 50 : 30,
                     boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
                     textAlign: 'center',
-                    border: '6px solid #FFD700'
+                    border: '4px solid #FFD700'
                   }}>
                     <TrophyOutlined style={{
-                      fontSize: latestWinners.length === 1 ? 140 : 80,
+                      fontSize: latestWinners.length === 1 ? 100 : 60,
                       color: '#FFD700',
-                      marginBottom: latestWinners.length === 1 ? 30 : 20
+                      marginBottom: latestWinners.length === 1 ? 20 : 15
                     }} />
 
                     <Title level={1} style={{
                       margin: 0,
-                      fontSize: latestWinners.length === 1 ? 100 : latestWinners.length <= 2 ? 60 : 48,
+                      fontSize: latestWinners.length === 1 ? 72 : latestWinners.length <= 2 ? 48 : 36,
                       color: '#8B0000',
                       fontWeight: 900,
                       letterSpacing: 2
@@ -238,12 +254,12 @@ function DisplayPage() {
                       {winner.employee.name}
                     </Title>
 
-                    <div style={{ margin: '20px 0' }}>
+                    <div style={{ margin: '15px 0' }}>
                       <Space size="middle" wrap>
                         <Tag style={{
-                          fontSize: latestWinners.length === 1 ? 32 : 24,
-                          padding: latestWinners.length === 1 ? '12px 28px' : '8px 16px',
-                          borderRadius: 8,
+                          fontSize: latestWinners.length === 1 ? 24 : 18,
+                          padding: latestWinners.length === 1 ? '8px 20px' : '6px 12px',
+                          borderRadius: 6,
                           background: '#8B0000',
                           border: 'none',
                           color: 'white',
@@ -253,9 +269,9 @@ function DisplayPage() {
                         </Tag>
                         {winner.employee.department && (
                           <Tag style={{
-                            fontSize: latestWinners.length === 1 ? 32 : 24,
-                            padding: latestWinners.length === 1 ? '12px 28px' : '8px 16px',
-                            borderRadius: 8,
+                            fontSize: latestWinners.length === 1 ? 24 : 18,
+                            padding: latestWinners.length === 1 ? '8px 20px' : '6px 12px',
+                            borderRadius: 6,
                             background: '#1890ff',
                             border: 'none',
                             color: 'white',
@@ -269,16 +285,16 @@ function DisplayPage() {
 
                     <div style={{
                       background: '#FFD700',
-                      borderRadius: 16,
-                      padding: latestWinners.length === 1 ? 50 : 30,
-                      marginTop: latestWinners.length === 1 ? 50 : 30,
+                      borderRadius: 12,
+                      padding: latestWinners.length === 1 ? 30 : 20,
+                      marginTop: latestWinners.length === 1 ? 30 : 20,
                       boxShadow: '0 12px 40px rgba(255, 215, 0, 0.4)'
                     }}>
                       <Text style={{
                         color: '#8B0000',
-                        fontSize: latestWinners.length === 1 ? 36 : 28,
+                        fontSize: latestWinners.length === 1 ? 28 : 22,
                         display: 'block',
-                        marginBottom: 15,
+                        marginBottom: 10,
                         fontWeight: 'bold'
                       }}>
                         🎁 獲得
@@ -286,16 +302,16 @@ function DisplayPage() {
                       <Title level={2} style={{
                         color: '#8B0000',
                         margin: 0,
-                        fontSize: latestWinners.length === 1 ? 72 : latestWinners.length <= 2 ? 48 : 36,
+                        fontSize: latestWinners.length === 1 ? 56 : latestWinners.length <= 2 ? 36 : 28,
                         fontWeight: 900
                       }}>
                         {winner.prize.name}
                       </Title>
                       <Text style={{
                         color: '#8B0000',
-                        fontSize: latestWinners.length === 1 ? 48 : latestWinners.length <= 2 ? 36 : 28,
+                        fontSize: latestWinners.length === 1 ? 36 : latestWinners.length <= 2 ? 28 : 22,
                         display: 'block',
-                        marginTop: 15,
+                        marginTop: 10,
                         fontWeight: 'bold'
                       }}>
                         NT$ {winner.prize.value.toLocaleString()}
@@ -416,29 +432,31 @@ function DisplayPage() {
         ) : (
           <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
             <div style={{
-              width: 240,
-              height: 240,
-              margin: '0 auto 40px',
+              width: 180,
+              height: 180,
+              margin: '0 auto 30px',
               background: 'rgba(255, 215, 0, 0.2)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '6px dashed #FFD700'
+              border: '5px dashed #FFD700'
             }}>
               <TrophyOutlined style={{
-                fontSize: 120,
+                fontSize: 90,
                 color: '#FFD700'
               }} />
             </div>
             <Title level={2} style={{
               color: '#FFD700',
-              fontSize: 48
+              fontSize: 36
             }}>
               等待主持人開始抽獎...
             </Title>
           </div>
         )}
+      </div>
+      {/* 16:9 固定容器結束 */}
       </div>
     </div>
   )
