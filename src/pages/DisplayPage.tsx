@@ -48,7 +48,7 @@ function DisplayPage() {
     // 輪詢最新中獎者（批次抽獎時顯示多筆）
     const fetchLatestWinner = async () => {
       try {
-        const response = await drawApi.getLatest(10) // 取最新 10 筆，以支援批次抽獎
+        const response = await drawApi.getLatest(50) // 取最新 50 筆，以支援批次抽獎
         const records = response.records || []
 
         if (records.length > 0) {
@@ -101,8 +101,8 @@ function DisplayPage() {
         position: 'relative',
         overflow: 'hidden'
       }}>
-      {/* 垂直跑馬燈：右側單列顯示中獎者 */}
-      {latestWinners.length > 0 && (
+      {/* 垂直跑馬燈：右側單列顯示中獎者（僅超過10人時顯示） */}
+      {latestWinners.length > 10 && (
         <div className="vertical-marquee-wrapper">
           <div className="vertical-marquee-content">
             {/* 重複兩次，第二輪會在第一輪快結束時從底部進入 */}
@@ -190,11 +190,11 @@ function DisplayPage() {
       <div style={{
         flex: 1,
         padding: '20px 30px',
-        paddingRight: latestWinners.length > 0 ? '220px' : '30px',
+        paddingRight: latestWinners.length > 10 ? '220px' : '30px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: latestWinners.length > 0 ? 'flex-start' : 'center',
+        justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden'
       }}>
@@ -320,8 +320,102 @@ function DisplayPage() {
                   </div>
                 ))}
               </div>
+            ) : latestWinners.length <= 10 ? (
+              /* 4-10 人：置中網格卡片，填滿螢幕不超出 */
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: latestWinners.length <= 4
+                  ? 'repeat(2, 1fr)'
+                  : latestWinners.length <= 6
+                    ? 'repeat(3, 1fr)'
+                    : latestWinners.length <= 8
+                      ? 'repeat(4, 1fr)'
+                      : 'repeat(5, 1fr)',
+                gap: 16,
+                width: '100%'
+              }}>
+                {latestWinners.map((winner) => (
+                  <div key={winner.id} className="winner-card" style={{
+                    background: 'white',
+                    borderRadius: 12,
+                    padding: '16px 12px',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                    textAlign: 'center',
+                    border: '3px solid #FFD700'
+                  }}>
+                    <TrophyOutlined style={{
+                      fontSize: 32,
+                      color: '#FFD700',
+                      marginBottom: 8
+                    }} />
+
+                    <Title level={3} style={{
+                      margin: 0,
+                      fontSize: 28,
+                      color: '#8B0000',
+                      fontWeight: 900,
+                      letterSpacing: 1
+                    }}>
+                      {winner.employee.name}
+                    </Title>
+
+                    <div style={{ margin: '8px 0' }}>
+                      <Tag style={{
+                        fontSize: 14,
+                        padding: '4px 10px',
+                        borderRadius: 6,
+                        background: '#8B0000',
+                        border: 'none',
+                        color: 'white',
+                        fontWeight: 'bold'
+                      }}>
+                        {winner.employee.id}
+                      </Tag>
+                      {winner.employee.department && (
+                        <Tag style={{
+                          fontSize: 14,
+                          padding: '4px 10px',
+                          borderRadius: 6,
+                          background: '#1890ff',
+                          border: 'none',
+                          color: 'white',
+                          fontWeight: 'bold',
+                          marginLeft: 4
+                        }}>
+                          {winner.employee.department}
+                        </Tag>
+                      )}
+                    </div>
+
+                    <div style={{
+                      background: '#FFD700',
+                      borderRadius: 8,
+                      padding: '10px 8px',
+                      marginTop: 10
+                    }}>
+                      <Text style={{
+                        color: '#8B0000',
+                        fontSize: 16,
+                        display: 'block',
+                        fontWeight: 'bold'
+                      }}>
+                        🎁 {winner.prize.name}
+                      </Text>
+                      <Text style={{
+                        color: '#8B0000',
+                        fontSize: 18,
+                        display: 'block',
+                        marginTop: 4,
+                        fontWeight: 'bold'
+                      }}>
+                        NT$ {winner.prize.value.toLocaleString()}
+                      </Text>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
-              /* 4 人以上：緊湊列表模式（適合 30+ 人） */
+              /* 11 人以上：緊湊列表模式 + 跑馬燈 */
               <div style={{
                 background: 'white',
                 borderRadius: 16,
@@ -329,7 +423,6 @@ function DisplayPage() {
                 boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
                 border: '6px solid #FFD700'
               }}>
-                {/* 中獎者列表（緊湊模式） */}
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(2, 1fr)',
@@ -349,7 +442,6 @@ function DisplayPage() {
                         border: '2px solid #e0e0e0'
                       }}
                     >
-                      {/* 序號 */}
                       <div style={{
                         minWidth: 32,
                         height: 32,
@@ -365,7 +457,6 @@ function DisplayPage() {
                         </Text>
                       </div>
 
-                      {/* 員工編號 + 姓名（帶背景） */}
                       <div style={{
                         flex: 1,
                         display: 'flex',
@@ -402,7 +493,6 @@ function DisplayPage() {
                         </Text>
                       </div>
 
-                      {/* 獎項（緊湊版） */}
                       <div style={{
                         background: '#FFD700',
                         padding: '6px 12px',
