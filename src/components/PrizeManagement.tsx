@@ -139,7 +139,7 @@ function PrizeManagement() {
       key: 'roleLimit',
       width: 120,
       render: (_: any, record: Prize) => {
-        if (record.value > 10000) {
+        if (record.requireRoleA) {
           return <Tag color="gold">僅角色 A</Tag>
         }
         return <Tag color="green">A / B 皆可</Tag>

@@ -46,6 +46,7 @@ export interface Prize {
   quantity: number
   remaining: number
   imageUrl?: string
+  requireRoleA: boolean
   createdAt: string
 }
 
