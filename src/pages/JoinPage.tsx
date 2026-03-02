@@ -442,6 +442,20 @@ function JoinPage() {
                           </Tag>
                         )}
                       </Space>
+                      {employeeInfo?.tableNumber && (
+                        <div style={{ marginTop: 12 }}>
+                          <Tag style={{
+                            fontSize: 18,
+                            padding: '8px 20px',
+                            background: '#1890ff',
+                            color: 'white',
+                            border: 'none',
+                            fontWeight: 'bold'
+                          }}>
+                            {employeeInfo.tableNumber} 桌
+                          </Tag>
+                        </div>
+                      )}
                     </div>
 
                     {/* 員工詳細資訊 */}
