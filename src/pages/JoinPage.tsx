@@ -292,7 +292,7 @@ function JoinPage() {
                 borderRadius: 8
               }}>
                 <Text style={{ fontSize: 13, color: '#ad6800', fontWeight: 'bold' }}>
-                  ⚠️ 您已經報到過了，按下確認將會再次記錄
+                  ⚠️ 您已經報到過了
                 </Text>
               </div>
             )}
