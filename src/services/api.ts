@@ -100,6 +100,18 @@ export const prizeApi = {
   delete: async (id: number) => {
     const response = await api.delete(`/prizes/${id}`)
     return response.data
+  },
+
+  // 上傳 CSV 檔案
+  uploadCSV: async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post('/prizes/upload-csv', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
   }
 }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Table, Button, Modal, Form, Input, InputNumber, message, Space, Card, Tag } from 'antd'
-import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
+import { Table, Button, Modal, Form, Input, InputNumber, message, Space, Card, Tag, Upload } from 'antd'
+import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, UploadOutlined } from '@ant-design/icons'
 import { prizeApi } from '../services/api'
 import type { Prize } from '../types'
 
@@ -26,6 +26,21 @@ function PrizeManagement() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleCSVUpload = async (file: File) => {
+    try {
+      const result = await prizeApi.uploadCSV(file)
+      message.success(result.message || `成功匯入 ${result.count} 種獎品`)
+      if (result.skipped && result.skipped.length > 0) {
+        message.warning(`${result.skipped.length} 筆資料已跳過`)
+      }
+      loadPrizes()
+    } catch (error: any) {
+      message.error(error.response?.data?.error || 'CSV 匯入失敗')
+      console.error(error)
+    }
+    return false
   }
 
   const handleAdd = () => {
@@ -169,6 +184,15 @@ function PrizeManagement() {
         >
           新增獎項
         </Button>
+        <Upload
+          beforeUpload={handleCSVUpload}
+          showUploadList={false}
+          accept=".csv"
+        >
+          <Button icon={<UploadOutlined />}>
+            批次匯入 CSV
+          </Button>
+        </Upload>
         <Button
           icon={<ReloadOutlined />}
           onClick={loadPrizes}
