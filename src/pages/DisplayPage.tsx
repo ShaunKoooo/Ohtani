@@ -54,6 +54,13 @@ function DisplayPage() {
         if (records.length > 0) {
           const latest = records[0]
 
+          // 檢查是否被主持人清除過畫面（忽略清除前的舊紀錄）
+          const ignoreBeforeId = Number(localStorage.getItem('display-ignore-before-id')) || 0
+          if (latest.id <= ignoreBeforeId) {
+            setLatestWinners([])
+            return
+          }
+
           // 如果是新的中獎者，更新顯示
           if (latest.id !== lastWinnerId) {
             // 找出所有同一次抽獎的中獎者（時間差在2秒內視為同一批次）

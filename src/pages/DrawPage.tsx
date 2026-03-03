@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Button, Card, Statistic, Row, Col, message, Modal, Typography, Space, InputNumber, Spin, Tag, Select, Alert } from 'antd'
-import { GiftOutlined, TrophyOutlined, UserOutlined, HomeOutlined, StarOutlined } from '@ant-design/icons'
+import { GiftOutlined, TrophyOutlined, UserOutlined, HomeOutlined, StarOutlined, ClearOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { statsApi, drawApi, prizeApi, lotteryApi } from '../services/api'
 
@@ -73,6 +73,19 @@ function DrawPage() {
       setSelectedPrizeId(null)
       message.success('已清除當前獎項')
     } catch (error: any) {
+      message.error('清除失敗')
+    }
+  }
+
+  const handleClearDisplay = async () => {
+    try {
+      const response = await drawApi.getLatest(1)
+      const records = response.records || []
+      if (records.length > 0) {
+        localStorage.setItem('display-ignore-before-id', String(records[0].id))
+      }
+      message.success('已清除展示畫面')
+    } catch {
       message.error('清除失敗')
     }
   }
@@ -263,6 +276,9 @@ function DrawPage() {
           <GiftOutlined /> 主持人抽獎
         </Title>
         <Space>
+          <Button icon={<ClearOutlined />} onClick={handleClearDisplay}>
+            清除展示畫面
+          </Button>
           <Button icon={<HomeOutlined />} onClick={() => navigate('/')}>
             返回首頁
           </Button>
