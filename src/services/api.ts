@@ -62,6 +62,20 @@ export const employeeApi = {
       }
     })
     return response.data
+  },
+
+  // 取得尚未中獎的員工列表
+  getNotDrawn: async () => {
+    const response = await api.get('/employees/not-drawn')
+    return response.data
+  },
+
+  // 匯出尚未中獎的員工 CSV
+  exportNotDrawnCSV: async () => {
+    const response = await api.get('/employees/not-drawn/export-csv', {
+      responseType: 'blob'
+    })
+    return response.data
   }
 }
 

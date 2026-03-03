@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Card, Statistic, Row, Col, Button, Modal, message, Table, Tag } from 'antd'
 import { ReloadOutlined, DeleteOutlined, DownloadOutlined, UserOutlined, GiftOutlined, TrophyOutlined, DollarOutlined } from '@ant-design/icons'
-import { statsApi, systemApi, drawApi } from '../services/api'
+import { statsApi, systemApi, drawApi, employeeApi } from '../services/api'
 
 function Statistics() {
   const [stats, setStats] = useState<any>(null)
   const [records, setRecords] = useState<any[]>([])
+  const [notDrawn, setNotDrawn] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -15,12 +16,14 @@ function Statistics() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [statsResponse, recordsResponse] = await Promise.all([
+      const [statsResponse, recordsResponse, notDrawnResponse] = await Promise.all([
         statsApi.get(),
-        drawApi.getRecords()
+        drawApi.getRecords(),
+        employeeApi.getNotDrawn()
       ])
       setStats(statsResponse.stats)
       setRecords(recordsResponse.records)
+      setNotDrawn(notDrawnResponse.employees)
     } catch (error) {
       message.error('載入資料失敗')
       console.error(error)
@@ -60,6 +63,25 @@ function Statistics() {
     })
   }
 
+  const handleExportNotDrawn = async () => {
+    if (notDrawn.length === 0) {
+      message.warning('目前沒有未中獎員工')
+      return
+    }
+
+    try {
+      const blob = await employeeApi.exportNotDrawnCSV()
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = `未中獎員工_${new Date().toISOString().split('T')[0]}.csv`
+      link.click()
+      message.success('匯出成功')
+    } catch (error) {
+      message.error('匯出失敗')
+      console.error(error)
+    }
+  }
+
   const handleExport = () => {
     if (records.length === 0) {
       message.warning('目前沒有中獎記錄')
@@ -91,6 +113,54 @@ function Statistics() {
 
     message.success('匯出成功')
   }
+
+  const notDrawnColumns = [
+    {
+      title: '員工',
+      key: 'employee',
+      render: (_: any, record: any) => (
+        <div>
+          <div style={{ fontWeight: 'bold' }}>{record.name}</div>
+          <div style={{ fontSize: 12, color: '#666' }}>
+            {record.employeeId}
+            {record.department && ` · ${record.department}`}
+          </div>
+        </div>
+      )
+    },
+    {
+      title: '角色',
+      dataIndex: 'roleType',
+      key: 'roleType',
+      width: 80,
+      render: (roleType: string) => {
+        const colorMap = { A: 'gold', B: 'green', C: 'default' }
+        return (
+          <Tag color={colorMap[roleType as keyof typeof colorMap] || 'default'}>
+            角色 {roleType}
+          </Tag>
+        )
+      }
+    },
+    {
+      title: '桌號',
+      dataIndex: 'tableNumber',
+      key: 'tableNumber',
+      width: 80,
+      render: (val: string | null) => val || '-'
+    },
+    {
+      title: '報到狀態',
+      dataIndex: 'hasCheckedIn',
+      key: 'hasCheckedIn',
+      width: 100,
+      render: (checked: boolean) => (
+        <Tag color={checked ? 'green' : 'default'}>
+          {checked ? '已報到' : '未報到'}
+        </Tag>
+      )
+    }
+  ]
 
   const columns = [
     {
@@ -297,6 +367,32 @@ function Statistics() {
             pageSize: 10,
             showSizeChanger: true,
             showTotal: (total) => `共 ${total} 筆記錄`
+          }}
+        />
+      </Card>
+
+      {/* 未中獎員工 */}
+      <Card
+        title={`未中獎員工（共 ${notDrawn.length} 人）`}
+        style={{ marginTop: 16 }}
+        extra={
+          <Button
+            icon={<DownloadOutlined />}
+            onClick={handleExportNotDrawn}
+          >
+            匯出 CSV
+          </Button>
+        }
+      >
+        <Table
+          columns={notDrawnColumns}
+          dataSource={notDrawn}
+          rowKey="employeeId"
+          loading={loading}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `共 ${total} 人`
           }}
         />
       </Card>
