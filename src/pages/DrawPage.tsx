@@ -107,6 +107,7 @@ function DrawPage() {
     setLoading(true)
 
     try {
+      localStorage.setItem('countdown-start', Date.now().toString())
       const response = await drawApi.batch(1)
 
       if (response.success && response.results.length > 0) {
@@ -207,6 +208,7 @@ function DrawPage() {
         setLoading(true)
 
         try {
+          localStorage.setItem('countdown-start', Date.now().toString())
           const response = await drawApi.batch(batchCount)
 
           if (response.success) {

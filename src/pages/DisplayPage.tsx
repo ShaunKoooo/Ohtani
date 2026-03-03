@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Typography, Tag, Space, Badge } from 'antd'
 import { TrophyOutlined, StarOutlined } from '@ant-design/icons'
 import { drawApi, lotteryApi } from '../services/api'
@@ -26,6 +26,9 @@ function DisplayPage() {
   const [latestWinners, setLatestWinners] = useState<Winner[]>([])
   const [currentPrize, setCurrentPrize] = useState<any>(null)
   const [lastWinnerId, setLastWinnerId] = useState<number | null>(null)
+  const [countdownNumber, setCountdownNumber] = useState<number | null>(null)
+  const [isCountingDown, setIsCountingDown] = useState(false)
+  const countdownSessionRef = useRef(0)
 
   useEffect(() => {
     // 輪詢當前獎項
@@ -47,6 +50,9 @@ function DisplayPage() {
   useEffect(() => {
     // 輪詢最新中獎者（批次抽獎時顯示多筆）
     const fetchLatestWinner = async () => {
+      // 倒數中暫停 polling
+      if (isCountingDown) return
+
       try {
         const response = await drawApi.getLatest(50) // 取最新 50 筆，以支援批次抽獎
         const records = response.records || []
@@ -83,7 +89,34 @@ function DisplayPage() {
     const winnerInterval = setInterval(fetchLatestWinner, 2000)
 
     return () => clearInterval(winnerInterval)
-  }, [lastWinnerId])
+  }, [lastWinnerId, isCountingDown])
+
+  // 監聽 DrawPage 發出的倒數訊號
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'countdown-start' && e.newValue) {
+        const signalTime = Number(e.newValue)
+        if (Date.now() - signalTime > 5000) return
+
+        const session = ++countdownSessionRef.current
+        setIsCountingDown(true)
+        setCountdownNumber(3)
+        setLatestWinners([])
+
+        setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(2) }, 1000)
+        setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(1) }, 2000)
+        setTimeout(() => {
+          if (countdownSessionRef.current === session) {
+            setCountdownNumber(null)
+            setIsCountingDown(false)
+          }
+        }, 3000)
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
 
   return (
     <div style={{
@@ -108,6 +141,15 @@ function DisplayPage() {
         position: 'relative',
         overflow: 'hidden'
       }}>
+      {/* 倒數動畫 */}
+      {countdownNumber !== null && (
+        <div className="countdown-overlay">
+          <div className="countdown-number" key={countdownNumber}>
+            {countdownNumber}
+          </div>
+        </div>
+      )}
+
       {/* 垂直跑馬燈：右側單列顯示中獎者（僅超過10人時顯示） */}
       {latestWinners.length > 10 && (
         <div className="vertical-marquee-wrapper">
