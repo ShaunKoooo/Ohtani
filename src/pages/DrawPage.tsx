@@ -60,6 +60,9 @@ function DrawPage() {
     try {
       const response = await lotteryApi.setCurrentPrize(selectedPrizeId)
       setCurrentPrize(response.currentPrize)
+      if (response.currentPrize?.remaining) {
+        setBatchCount(response.currentPrize.remaining)
+      }
       message.success(response.message)
     } catch (error: any) {
       message.error(error.response?.data?.error || '設定失敗')
