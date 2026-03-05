@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Typography, Tag, Space, Badge } from 'antd'
 import { TrophyOutlined, StarOutlined } from '@ant-design/icons'
-import { drawApi, lotteryApi } from '../services/api'
+import { drawApi, lotteryApi, displayApi } from '../services/api'
 import './DisplayPage.css'
 
 const { Title, Text } = Typography
@@ -29,6 +29,7 @@ function DisplayPage() {
   const [countdownNumber, setCountdownNumber] = useState<number | null>(null)
   const [isCountingDown, setIsCountingDown] = useState(false)
   const countdownSessionRef = useRef(0)
+  const displayVersionRef = useRef(0)
 
   useEffect(() => {
     // 輪詢當前獎項
@@ -48,24 +49,30 @@ function DisplayPage() {
   }, [])
 
   useEffect(() => {
-    // 輪詢最新中獎者（批次抽獎時顯示多筆）
-    const fetchLatestWinner = async () => {
+    // 輪詢顯示狀態與最新中獎者
+    const fetchDisplayAndWinners = async () => {
       // 倒數中暫停 polling
       if (isCountingDown) return
 
       try {
+        // 檢查顯示狀態（跨裝置清除用）
+        const displayState = await displayApi.getState()
+        if (displayState.status === 'cleared' && displayState.version !== displayVersionRef.current) {
+          displayVersionRef.current = displayState.version
+          setLatestWinners([])
+          setLastWinnerId(null)
+          return
+        }
+
+        if (displayState.status === 'showing' && displayState.version !== displayVersionRef.current) {
+          displayVersionRef.current = displayState.version
+        }
+
         const response = await drawApi.getLatest(50) // 取最新 50 筆，以支援批次抽獎
         const records = response.records || []
 
-        if (records.length > 0) {
+        if (records.length > 0 && displayState.status === 'showing') {
           const latest = records[0]
-
-          // 檢查是否被主持人清除過畫面（忽略清除前的舊紀錄）
-          const ignoreBeforeId = Number(localStorage.getItem('display-ignore-before-id')) || 0
-          if (latest.id <= ignoreBeforeId) {
-            setLatestWinners([])
-            return
-          }
 
           // 如果是新的中獎者，更新顯示
           if (latest.id !== lastWinnerId) {
@@ -81,42 +88,53 @@ function DisplayPage() {
           }
         }
       } catch (error) {
-        console.error('Failed to fetch latest winner:', error)
+        console.error('Failed to fetch display state:', error)
       }
     }
 
-    fetchLatestWinner()
-    const winnerInterval = setInterval(fetchLatestWinner, 2000)
+    fetchDisplayAndWinners()
+    const interval = setInterval(fetchDisplayAndWinners, 2000)
 
-    return () => clearInterval(winnerInterval)
+    return () => clearInterval(interval)
   }, [lastWinnerId, isCountingDown])
 
-  // 監聽 DrawPage 發出的倒數訊號
+  // 輪詢後端倒數訊號（跨裝置）
+  const lastCountdownRef = useRef<string | null>(null)
+
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'countdown-start' && e.newValue) {
-        const signalTime = Number(e.newValue)
-        if (Date.now() - signalTime > 5000) return
+    const checkCountdown = async () => {
+      if (isCountingDown) return
+      try {
+        const state = await displayApi.getState()
+        const ts = state.countdownStartedAt
+        if (ts && ts !== lastCountdownRef.current) {
+          lastCountdownRef.current = ts
+          // 忽略超過 10 秒前的倒數訊號
+          if (Date.now() - new Date(ts).getTime() > 10000) return
 
-        const session = ++countdownSessionRef.current
-        setIsCountingDown(true)
-        setCountdownNumber(3)
-        setLatestWinners([])
+          const session = ++countdownSessionRef.current
+          setIsCountingDown(true)
+          setCountdownNumber(3)
+          setLatestWinners([])
 
-        setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(2) }, 1000)
-        setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(1) }, 2000)
-        setTimeout(() => {
-          if (countdownSessionRef.current === session) {
-            setCountdownNumber(null)
-            setIsCountingDown(false)
-          }
-        }, 3000)
+          setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(2) }, 1000)
+          setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(1) }, 2000)
+          setTimeout(() => {
+            if (countdownSessionRef.current === session) {
+              setCountdownNumber(null)
+              setIsCountingDown(false)
+            }
+          }, 3000)
+        }
+      } catch (error) {
+        // ignore polling errors
       }
     }
 
-    window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
-  }, [])
+    checkCountdown()
+    const interval = setInterval(checkCountdown, 1000)
+    return () => clearInterval(interval)
+  }, [isCountingDown])
 
   return (
     <div style={{

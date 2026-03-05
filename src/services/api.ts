@@ -183,6 +183,34 @@ export const lotteryApi = {
   }
 }
 
+// ========== 顯示頁面控制 ==========
+
+export const displayApi = {
+  // 取得顯示狀態（供 DisplayPage polling）
+  getState: async () => {
+    const response = await api.get('/display/state')
+    return response.data
+  },
+
+  // 清除所有裝置的顯示畫面
+  clear: async () => {
+    const response = await api.post('/display/clear')
+    return response.data
+  },
+
+  // 標記有新的中獎結果要顯示
+  show: async () => {
+    const response = await api.post('/display/show')
+    return response.data
+  },
+
+  // 觸發倒數計時（跨裝置）
+  startCountdown: async () => {
+    const response = await api.post('/display/countdown')
+    return response.data
+  }
+}
+
 // ========== 系統管理 ==========
 
 export const systemApi = {

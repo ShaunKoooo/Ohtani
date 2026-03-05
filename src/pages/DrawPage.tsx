@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Button, Card, Statistic, Row, Col, message, Modal, Typography, Space, InputNumber, Spin, Tag, Select, Alert } from 'antd'
 import { GiftOutlined, TrophyOutlined, UserOutlined, HomeOutlined, StarOutlined, ClearOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import { statsApi, drawApi, prizeApi, lotteryApi } from '../services/api'
+import { statsApi, drawApi, prizeApi, lotteryApi, displayApi } from '../services/api'
 
 const { Title, Text } = Typography
 
@@ -79,11 +79,7 @@ function DrawPage() {
 
   const handleClearDisplay = async () => {
     try {
-      const response = await drawApi.getLatest(1)
-      const records = response.records || []
-      if (records.length > 0) {
-        localStorage.setItem('display-ignore-before-id', String(records[0].id))
-      }
+      await displayApi.clear()
       message.success('已清除展示畫面')
     } catch {
       message.error('清除失敗')
@@ -107,7 +103,7 @@ function DrawPage() {
     setLoading(true)
 
     try {
-      localStorage.setItem('countdown-start', Date.now().toString())
+      displayApi.startCountdown()
       const response = await drawApi.batch(1)
 
       if (response.success && response.results.length > 0) {
@@ -208,7 +204,7 @@ function DrawPage() {
         setLoading(true)
 
         try {
-          localStorage.setItem('countdown-start', Date.now().toString())
+          displayApi.startCountdown()
           const response = await drawApi.batch(batchCount)
 
           if (response.success) {
