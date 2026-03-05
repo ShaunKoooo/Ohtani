@@ -83,7 +83,10 @@ function DrawPage() {
   const handleClearDisplay = async () => {
     try {
       await displayApi.clear()
-      message.success('已清除展示畫面')
+      await lotteryApi.clearCurrentPrize()
+      setCurrentPrize(null)
+      setSelectedPrizeId(null)
+      message.success('已清除展示畫面及當前獎項')
     } catch {
       message.error('清除失敗')
     }
