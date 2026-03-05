@@ -86,104 +86,6 @@ function DrawPage() {
     }
   }
 
-  const handleDraw = async () => {
-    if (stats?.employees.undrawn === 0) {
-      message.warning('所有員工都已抽過獎了')
-      return
-    }
-
-    if (stats?.prizes.remaining === 0) {
-      Modal.warning({
-        title: '🎤 請大喊老闆加碼！',
-        content: '所有獎品都抽完了'
-      })
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      displayApi.startCountdown()
-      const response = await drawApi.batch(1)
-
-      if (response.success && response.results.length > 0) {
-        const result = response.results[0]
-
-        if (result.success) {
-          // 中獎
-          Modal.success({
-            title: '🎉 恭喜中獎',
-            width: 600,
-            content: (
-              <div style={{ padding: '20px 0' }}>
-                <div style={{ marginBottom: 20 }}>
-                  <Title level={3} style={{ marginBottom: 8 }}>
-                    {result.employee.name}
-                  </Title>
-                  <Space wrap>
-                    <Tag color="blue">{result.employee.id}</Tag>
-                    <Tag color={result.employee.roleType === 'A' ? 'gold' : 'green'}>
-                      角色 {result.employee.roleType}
-                    </Tag>
-                    {result.employee.department && (
-                      <Tag>{result.employee.department}</Tag>
-                    )}
-                  </Space>
-                </div>
-                <div style={{
-                  background: '#fff1f0',
-                  border: '2px solid #ff4d4f',
-                  borderRadius: 8,
-                  padding: 20,
-                  textAlign: 'center'
-                }}>
-                  <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#ff4d4f' }}>
-                    {result.prize.name}
-                  </Text>
-                  <div style={{ marginTop: 8 }}>
-                    <Text style={{ fontSize: 18, color: '#666' }}>
-                      價值 NT$ {result.prize.value.toLocaleString()}
-                    </Text>
-                  </div>
-                </div>
-              </div>
-            ),
-            onOk: () => {
-              loadStats()
-            }
-          })
-        } else {
-          // 老闆加碼彩蛋
-          Modal.warning({
-            title: '🎤 請大喊老闆加碼！',
-            width: 500,
-            content: (
-              <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <Text style={{ fontSize: 18 }}>
-                  員工 <strong>{result.employee?.name}</strong> 沒有適合的獎品可以抽
-                </Text>
-                <div style={{ marginTop: 20, padding: 16, background: '#fff7e6', borderRadius: 8 }}>
-                  <Text strong style={{ fontSize: 16 }}>
-                    {result.message}
-                  </Text>
-                </div>
-              </div>
-            ),
-            onOk: () => {
-              loadStats()
-            }
-          })
-        }
-      }
-
-    } catch (error: any) {
-      console.error('Draw error:', error)
-      message.error(error.response?.data?.error || '抽獎失敗')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleBatchDraw = async () => {
     if (batchCount <= 0 || batchCount > 100) {
       message.warning('批次數量必須介於 1-100 之間')
@@ -392,75 +294,40 @@ function DrawPage() {
       </Card>
 
       {/* 抽獎控制區 */}
-      <Row gutter={16}>
-        <Col xs={24} lg={12}>
-          <Card
-            title="單次抽獎"
-            style={{ marginBottom: 16 }}
+      <Card
+        title="抽獎"
+        style={{ marginBottom: 16 }}
+      >
+        <div style={{ padding: '20px 0' }}>
+          <div style={{ marginBottom: 20 }}>
+            <Text style={{ display: 'block', marginBottom: 8 }}>一次抽幾個人：</Text>
+            <InputNumber
+              min={1}
+              max={100}
+              value={batchCount}
+              onChange={(value) => setBatchCount(value || 1)}
+              style={{ width: '100%' }}
+              size="large"
+            />
+          </div>
+
+          <Button
+            type="primary"
+            size="large"
+            block
+            loading={loading}
+            onClick={handleBatchDraw}
+            disabled={stats?.employees.undrawn === 0}
+            icon={<GiftOutlined />}
+            style={{
+              height: 80,
+              fontSize: 24,
+            }}
           >
-            <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <Button
-                type="primary"
-                size="large"
-                icon={<GiftOutlined />}
-                loading={loading}
-                onClick={handleDraw}
-                disabled={stats?.employees.undrawn === 0}
-                style={{
-                  height: 120,
-                  fontSize: 32,
-                  width: '100%',
-                  maxWidth: 400
-                }}
-              >
-                {loading ? '抽獎中...' : '🎉 開始抽獎'}
-              </Button>
-              <div style={{ marginTop: 20, color: '#666' }}>
-                <Text>隨機抽出一位還沒中獎的員工</Text>
-              </div>
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} lg={12}>
-          <Card
-            title="批次抽獎"
-            style={{ marginBottom: 16 }}
-          >
-            <div style={{ padding: '20px 0' }}>
-              <div style={{ marginBottom: 20 }}>
-                <Text style={{ display: 'block', marginBottom: 8 }}>一次抽幾個人：</Text>
-                <InputNumber
-                  min={1}
-                  max={100}
-                  value={batchCount}
-                  onChange={(value) => setBatchCount(value || 1)}
-                  style={{ width: '100%' }}
-                  size="large"
-                />
-              </div>
-
-              <Button
-                type="primary"
-                size="large"
-                block
-                loading={loading}
-                onClick={handleBatchDraw}
-                disabled={stats?.employees.undrawn === 0}
-                icon={<GiftOutlined />}
-              >
-                {loading ? '批次抽獎中...' : `開始批次抽獎（${batchCount} 人）`}
-              </Button>
-
-              <div style={{ marginTop: 16, padding: 12, background: '#f0f0f0', borderRadius: 4 }}>
-                <Text style={{ fontSize: 12, color: '#666' }}>
-                  💡 適用情境：老闆說「10 萬元抽 5 個人」時使用
-                </Text>
-              </div>
-            </div>
-          </Card>
-        </Col>
-      </Row>
+            {loading ? '抽獎中...' : `🎉 開始抽獎（${batchCount} 人）`}
+          </Button>
+        </div>
+      </Card>
 
       {/* 統計詳情 */}
       {stats && (
