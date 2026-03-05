@@ -28,6 +28,7 @@ function DisplayPage() {
   const [lastWinnerId, setLastWinnerId] = useState<number | null>(null)
   const [countdownNumber, setCountdownNumber] = useState<number | null>(null)
   const [isCountingDown, setIsCountingDown] = useState(false)
+  const isCountingDownRef = useRef(false)
   const countdownSessionRef = useRef(0)
   const displayVersionRef = useRef(0)
 
@@ -48,49 +49,47 @@ function DisplayPage() {
     return () => clearInterval(prizeInterval)
   }, [])
 
-  useEffect(() => {
-    // 輪詢顯示狀態與最新中獎者
-    const fetchDisplayAndWinners = async () => {
-      // 倒數中暫停 polling
-      if (isCountingDown) return
+  // 取得最新中獎者（獨立函式，用 ref 避免 stale closure）
+  const fetchDisplayAndWinners = async () => {
+    if (isCountingDownRef.current) return
 
-      try {
-        // 檢查顯示狀態（跨裝置清除用）
-        const displayState = await displayApi.getState()
-        if (displayState.status === 'cleared' && displayState.version !== displayVersionRef.current) {
-          displayVersionRef.current = displayState.version
-          setLatestWinners([])
-          setLastWinnerId(null)
-          return
-        }
-
-        if (displayState.status === 'showing' && displayState.version !== displayVersionRef.current) {
-          displayVersionRef.current = displayState.version
-        }
-
-        const response = await drawApi.getLatest(50) // 取最新 50 筆，以支援批次抽獎
-        const records = response.records || []
-
-        if (records.length > 0 && displayState.status === 'showing') {
-          const latest = records[0]
-
-          // 如果是新的中獎者，更新顯示
-          if (latest.id !== lastWinnerId) {
-            // 找出所有同一次抽獎的中獎者（時間差在2秒內視為同一批次）
-            const latestTime = new Date(latest.drawnAt).getTime()
-            const batchWinners = records.filter((record: Winner) => {
-              const recordTime = new Date(record.drawnAt).getTime()
-              return Math.abs(latestTime - recordTime) < 2000 // 2秒內視為同批次
-            })
-
-            setLatestWinners(batchWinners)
-            setLastWinnerId(latest.id)
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch display state:', error)
+    try {
+      const displayState = await displayApi.getState()
+      if (displayState.status === 'cleared' && displayState.version !== displayVersionRef.current) {
+        displayVersionRef.current = displayState.version
+        setLatestWinners([])
+        setLastWinnerId(null)
+        return
       }
+
+      if (displayState.status === 'showing' && displayState.version !== displayVersionRef.current) {
+        displayVersionRef.current = displayState.version
+      }
+
+      const response = await drawApi.getLatest(50)
+      const records = response.records || []
+
+      if (records.length > 0 && displayState.status === 'showing') {
+        const latest = records[0]
+
+        if (latest.id !== lastWinnerId) {
+          const latestTime = new Date(latest.drawnAt).getTime()
+          const batchWinners = records.filter((record: Winner) => {
+            const recordTime = new Date(record.drawnAt).getTime()
+            return Math.abs(latestTime - recordTime) < 2000
+          })
+
+          setLatestWinners(batchWinners)
+          setLastWinnerId(latest.id)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch display state:', error)
     }
+  }
+
+  useEffect(() => {
+    if (isCountingDown) return
 
     fetchDisplayAndWinners()
     const interval = setInterval(fetchDisplayAndWinners, 2000)
@@ -103,7 +102,7 @@ function DisplayPage() {
 
   useEffect(() => {
     const checkCountdown = async () => {
-      if (isCountingDown) return
+      if (isCountingDownRef.current) return
       try {
         const state = await displayApi.getState()
         const ts = state.countdownStartedAt
@@ -113,18 +112,29 @@ function DisplayPage() {
           if (Date.now() - new Date(ts).getTime() > 10000) return
 
           const session = ++countdownSessionRef.current
+          isCountingDownRef.current = true
           setIsCountingDown(true)
           setCountdownNumber(3)
           setLatestWinners([])
+          // 重設 lastWinnerId，確保倒數結束後能重新偵測到中獎者
+          setLastWinnerId(null)
 
-          setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(2) }, 1000)
-          setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(1) }, 2000)
+          // 根據 countdownStartedAt 計算精確延遲
+          const countdownStart = new Date(ts).getTime()
+          const elapsed = Date.now() - countdownStart
+          const delay = (ms: number) => Math.max(0, ms - elapsed)
+
+          setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(2) }, delay(1000))
+          setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(1) }, delay(2000))
           setTimeout(() => {
             if (countdownSessionRef.current === session) {
               setCountdownNumber(null)
+              isCountingDownRef.current = false
               setIsCountingDown(false)
+              // 倒數結束立刻 fetch，不等下一次 polling 週期
+              fetchDisplayAndWinners()
             }
-          }, 3000)
+          }, delay(3000))
         }
       } catch (error) {
         // ignore polling errors

@@ -93,7 +93,7 @@
 /* ===== 倒數動畫 ===== */
 
 .countdown-overlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -101,7 +101,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(139, 0, 0, 0.95);
+  background: #8B0000;
   z-index: 9998;
   animation: fadeIn 0.3s ease;
 }
