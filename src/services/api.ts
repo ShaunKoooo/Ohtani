@@ -24,6 +24,12 @@ export const employeeApi = {
     return response.data
   },
 
+  // 一鍵全員報到
+  checkinAll: async () => {
+    const response = await api.post('/checkin/all')
+    return response.data
+  },
+
   // 取得所有員工
   getAll: async () => {
     const response = await api.get('/employees')

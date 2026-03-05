@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Table, Button, Modal, Form, Input, Select, message, Space, Upload, Card, DatePicker } from 'antd'
-import { PlusOutlined, UploadOutlined, ReloadOutlined, WarningOutlined, DeleteOutlined } from '@ant-design/icons'
+import { PlusOutlined, UploadOutlined, ReloadOutlined, WarningOutlined, DeleteOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import { employeeApi, systemApi } from '../services/api'
 import type { Employee } from '../types'
 
@@ -77,6 +77,31 @@ function EmployeeManagement() {
       console.error(error)
     }
     return false // 阻止自動上傳
+  }
+
+  const handleCheckinAll = () => {
+    const uncheckedCount = employees.filter(e => !e.hasCheckedIn).length
+    if (uncheckedCount === 0) {
+      message.info('所有員工皆已報到')
+      return
+    }
+    Modal.confirm({
+      title: '一鍵全員報到',
+      icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />,
+      content: `確定要將 ${uncheckedCount} 位尚未報到的員工全部設為已報到嗎？`,
+      okText: '確認報到',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          const result = await employeeApi.checkinAll()
+          message.success(result.message || `一鍵報到完成，共報到 ${result.checkedInCount} 位員工`)
+          loadEmployees()
+        } catch (error: any) {
+          message.error(error.response?.data?.error || '一鍵報到失敗')
+          console.error(error)
+        }
+      }
+    })
   }
 
   const handleReset = () => {
@@ -248,6 +273,13 @@ function EmployeeManagement() {
             批次匯入 CSV（支援自動角色判定）
           </Button>
         </Upload>
+        <Button
+          icon={<CheckCircleOutlined />}
+          onClick={handleCheckinAll}
+          style={{ backgroundColor: '#52c41a', borderColor: '#52c41a', color: 'white' }}
+        >
+          一鍵全員報到
+        </Button>
         <Button
           icon={<ReloadOutlined />}
           onClick={loadEmployees}
