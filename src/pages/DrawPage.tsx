@@ -155,7 +155,23 @@ function DrawPage() {
                 </div>
               ),
               onOk: () => {
-                loadStats()
+                Modal.confirm({
+                  title: '是否清除展示畫面？',
+                  content: '抽獎已完成，是否要清除展示畫面上的倒數與結果？',
+                  okText: '清除',
+                  cancelText: '不用',
+                  onOk: async () => {
+                    await handleClearDisplay()
+                    loadStats()
+                    loadPrizes()
+                    loadCurrentPrize()
+                  },
+                  onCancel: () => {
+                    loadStats()
+                    loadPrizes()
+                    loadCurrentPrize()
+                  }
+                })
               }
             })
           }
