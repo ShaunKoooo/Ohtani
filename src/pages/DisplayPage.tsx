@@ -55,6 +55,13 @@ function DisplayPage() {
 
     try {
       const displayState = await displayApi.getState()
+
+      // 如果有未處理的倒數信號，跳過本次 fetch，讓倒數 polling 先處理
+      const ts = displayState.countdownStartedAt
+      if (ts && ts !== lastCountdownRef.current && Date.now() - new Date(ts).getTime() <= 10000) {
+        return
+      }
+
       if (displayState.status === 'cleared' && displayState.version !== displayVersionRef.current) {
         displayVersionRef.current = displayState.version
         setLatestWinners([])
