@@ -49,19 +49,47 @@ function DisplayPage() {
     return () => clearInterval(prizeInterval)
   }, [])
 
-  // 取得最新中獎者（獨立函式，用 ref 避免 stale closure）
-  const fetchDisplayAndWinners = async () => {
+  // 單一輪詢：先檢查倒數，再決定是否顯示中獎者（避免兩個獨立 polling 的 race condition）
+  const lastCountdownRef = useRef<string | null>(null)
+
+  const pollDisplay = async () => {
     if (isCountingDownRef.current) return
 
     try {
       const displayState = await displayApi.getState()
 
-      // 如果有未處理的倒數信號，跳過本次 fetch，讓倒數 polling 先處理
+      // --- 先檢查倒數信號 ---
       const ts = displayState.countdownStartedAt
-      if (ts && ts !== lastCountdownRef.current && Date.now() - new Date(ts).getTime() <= 10000) {
-        return
+      if (ts && ts !== lastCountdownRef.current) {
+        lastCountdownRef.current = ts
+        // 忽略超過 10 秒前的倒數訊號
+        if (Date.now() - new Date(ts).getTime() <= 10000) {
+          const session = ++countdownSessionRef.current
+          isCountingDownRef.current = true
+          setIsCountingDown(true)
+          setCountdownNumber(3)
+          setLatestWinners([])
+          setLastWinnerId(null)
+
+          const countdownStart = new Date(ts).getTime()
+          const elapsed = Date.now() - countdownStart
+          const delay = (ms: number) => Math.max(0, ms - elapsed)
+
+          setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(2) }, delay(1000))
+          setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(1) }, delay(2000))
+          setTimeout(() => {
+            if (countdownSessionRef.current === session) {
+              setCountdownNumber(null)
+              isCountingDownRef.current = false
+              setIsCountingDown(false)
+            }
+          }, delay(3000))
+          // 偵測到倒數，本次不繼續顯示中獎者
+          return
+        }
       }
 
+      // --- 再處理顯示邏輯 ---
       if (displayState.status === 'cleared' && displayState.version !== displayVersionRef.current) {
         displayVersionRef.current = displayState.version
         setLatestWinners([])
@@ -98,60 +126,11 @@ function DisplayPage() {
   useEffect(() => {
     if (isCountingDown) return
 
-    fetchDisplayAndWinners()
-    const interval = setInterval(fetchDisplayAndWinners, 2000)
+    pollDisplay()
+    const interval = setInterval(pollDisplay, 1000)
 
     return () => clearInterval(interval)
   }, [lastWinnerId, isCountingDown])
-
-  // 輪詢後端倒數訊號（跨裝置）
-  const lastCountdownRef = useRef<string | null>(null)
-
-  useEffect(() => {
-    const checkCountdown = async () => {
-      if (isCountingDownRef.current) return
-      try {
-        const state = await displayApi.getState()
-        const ts = state.countdownStartedAt
-        if (ts && ts !== lastCountdownRef.current) {
-          lastCountdownRef.current = ts
-          // 忽略超過 10 秒前的倒數訊號
-          if (Date.now() - new Date(ts).getTime() > 10000) return
-
-          const session = ++countdownSessionRef.current
-          isCountingDownRef.current = true
-          setIsCountingDown(true)
-          setCountdownNumber(3)
-          setLatestWinners([])
-          // 重設 lastWinnerId，確保倒數結束後能重新偵測到中獎者
-          setLastWinnerId(null)
-
-          // 根據 countdownStartedAt 計算精確延遲
-          const countdownStart = new Date(ts).getTime()
-          const elapsed = Date.now() - countdownStart
-          const delay = (ms: number) => Math.max(0, ms - elapsed)
-
-          setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(2) }, delay(1000))
-          setTimeout(() => { if (countdownSessionRef.current === session) setCountdownNumber(1) }, delay(2000))
-          setTimeout(() => {
-            if (countdownSessionRef.current === session) {
-              setCountdownNumber(null)
-              isCountingDownRef.current = false
-              setIsCountingDown(false)
-              // 倒數結束立刻 fetch，不等下一次 polling 週期
-              fetchDisplayAndWinners()
-            }
-          }, delay(3000))
-        }
-      } catch (error) {
-        // ignore polling errors
-      }
-    }
-
-    checkCountdown()
-    const interval = setInterval(checkCountdown, 1000)
-    return () => clearInterval(interval)
-  }, [isCountingDown])
 
   return (
     <div style={{
